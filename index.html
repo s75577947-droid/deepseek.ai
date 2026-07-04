@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek AI · Expert & Instant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-input: #1e1e2a;
+            --accent: #6366f1;
+            --accent-light: #818cf8;
+            --user-bubble: #1e293b;
+            --bot-bubble: #12121a;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border: #1e293b;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --shadow-lg: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            backdrop-filter: blur(20px);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+        }
+
+        .logo-text h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f1f5f9;
+            letter-spacing: -0.3px;
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: #94a3b8;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            transform: scale(0.95);
+        }
+
+        /* Mode Selection Screen */
+        .mode-select-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-primary);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            padding: 20px;
+        }
+
+        .mode-select-screen.hidden {
+            display: none;
+        }
+
+        .mode-select-screen h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .mode-select-screen p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .mode-card {
+            width: 100%;
+            max-width: 360px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .mode-card:active {
+            border-color: var(--accent);
+            box-shadow: 0 0 30px rgba(99,102,241,0.2);
+            transform: scale(0.98);
+        }
+
+        .mode-card .mode-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .mode-card h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .mode-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-primary);
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .settings-panel.hidden {
+            display: none;
+        }
+
+        .settings-panel h2 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .setting-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .setting-item select {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .back-btn {
+            margin-top: 24px;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--accent);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        /* Chat */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            max-width: 88%;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .message.bot {
+            align-self: flex-start;
+        }
+
+        .msg-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .user .msg-avatar {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+        .bot .msg-avatar {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+        }
+
+        .bubble {
+            padding: 12px 16px;
+            border-radius: 20px;
+            line-height: 1.65;
+            font-size: 14px;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .user .bubble {
+            background: #1e293b;
+            border-bottom-right-radius: 6px;
+            color: #e2e8f0;
+        }
+        .bot .bubble {
+            background: var(--bot-bubble);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 6px;
+            color: #cbd5e1;
+        }
+
+        .bubble pre {
+            background: #0a0a14;
+            padding: 14px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 8px 0;
+            border: 1px solid var(--border);
+        }
+
+        .bubble code {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        /* Typing */
+        .typing-bubble {
+            display: flex;
+            gap: 6px;
+            padding: 14px 18px;
+        }
+
+        .typing-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--accent-light);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+            30% { transform: translateY(-7px); opacity: 1; }
+        }
+
+        /* Input Area */
+        .input-area {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 12px 16px 16px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-shrink: 0;
+        }
+
+        .input-box {
+            flex: 1;
+            background: var(--bg-input);
+            border-radius: 28px;
+            border: 1.5px solid var(--border);
+            display: flex;
+            align-items: flex-end;
+            transition: all 0.3s;
+            padding: 4px;
+        }
+
+        .input-box:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+        }
+
+        .input-box textarea {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 15px;
+            padding: 12px 16px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            line-height: 1.5;
+            max-height: 120px;
+            min-height: 24px;
+            height: 48px;
+        }
+
+        .input-box textarea::placeholder {
+            color: #64748b;
+        }
+
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+        }
+
+        .send-btn:active {
+            transform: scale(0.92);
+            background: #4f46e5;
+        }
+        .send-btn:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mode Selection Screen -->
+    <div class="mode-select-screen" id="modeSelectScreen">
+        <h2>Choose Your Mode</h2>
+        <p>This cannot be changed later</p>
+        <div class="mode-card" data-mode="expert">
+            <div class="mode-icon">🧠</div>
+            <h3>Expert</h3>
+            <p>Detailed, comprehensive answers with deep reasoning</p>
+        </div>
+        <div class="mode-card" data-mode="instant">
+            <div class="mode-icon">⚡</div>
+            <h3>Instant</h3>
+            <p>Fast, concise answers for quick tasks</p>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel hidden" id="settingsPanel">
+        <h2>Settings</h2>
+        <div class="setting-item">
+            <span>🌐 Language</span>
+            <select id="languageSelect">
+                <option value="en" selected>English</option>
+                <option value="fa">فارسی</option>
+                <option value="ar">العربية</option>
+                <option value="tr">Türkçe</option>
+            </select>
+        </div>
+        <div class="setting-item">
+            <span>📝 Current Mode</span>
+            <span id="currentModeDisplay" style="color: var(--accent-light); font-weight: 600;"></span>
+        </div>
+        <div class="back-btn" onclick="closeSettings()">Close Settings</div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="logo-area">
+            <div class="logo-icon">🧠</div>
+            <div class="logo-text">
+                <h2>DeepSeek</h2>
+                <span id="headerSubtitle">Expert Mode</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="openSettings()">⚙️</button>
+            <button class="icon-btn" onclick="clearHistory()">🗑️</button>
+        </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-container" id="chatContainer"></div>
+
+    <!-- Input -->
+    <div class="input-area">
+        <div class="input-box">
+            <textarea id="userInput" rows="1" placeholder="Ask anything..." autocomplete="off"></textarea>
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">▲</button>
+    </div>
+
+    <script>
+        const API_CONFIG = {
+            baseUrl: 'https://openrouter.ai/api/v1/chat/completions',
+            apiKey: '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',
+            model: 'deepseek/deepseek-chat-v3-0324'
+        };
+
+        let conversationHistory = [];
+        let selectedMode = null; // 'expert' or 'instant'
+        let currentLanguage = 'en';
+        let isProcessing = false;
+
+        const systemPrompts = {
+            en: {
+                expert: 'You are an expert AI assistant. Provide detailed, comprehensive, and deeply reasoned answers. Use examples and explain thoroughly. Be professional and precise.',
+                instant: 'You are a fast AI assistant. Provide short, concise, and to-the-point answers. No fluff, just the essential information. Be direct and efficient.'
+            },
+            fa: {
+                expert: 'تو یک دستیار هوش مصنوعی متخصص هستی. پاسخ‌های جامع، دقیق و با استدلال عمیق بده. از مثال استفاده کن و کامل توضیح بده.',
+                instant: 'تو یک دستیار سریع هستی. پاسخ‌های کوتاه، مختصر و مفید بده. فقط اطلاعات ضروری را بگو. مستقیم و کارآمد باش.'
+            }
+        };
+
+        // ===================== MODE SELECTION =====================
+        function selectMode(mode) {
+            selectedMode = mode;
+            localStorage.setItem('ds_mode', mode);
+            document.getElementById('modeSelectScreen').classList.add('hidden');
+            document.getElementById('headerSubtitle').textContent = mode === 'expert' ? 'Expert' : 'Instant';
+            document.getElementById('currentModeDisplay').textContent = mode === 'expert' ? 'Expert' : 'Instant';
+            document.getElementById('userInput').placeholder = 'Ask anything...';
+            init();
+        }
+
+        document.querySelectorAll('.mode-card').forEach(card => {
+            card.addEventListener('click', () => selectMode(card.dataset.mode));
+        });
+
+        // ===================== SETTINGS =====================
+        function openSettings() {
+            document.getElementById('settingsPanel').classList.remove('hidden');
+            document.getElementById('currentModeDisplay').textContent = selectedMode === 'expert' ? 'Expert' : 'Instant';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsPanel').classList.add('hidden');
+            document.getElementById('userInput').focus();
+        }
+
+        document.getElementById('languageSelect').addEventListener('change', function() {
+            currentLanguage = this.value;
+            localStorage.setItem('ds_lang', currentLanguage);
+            const placeholderText = {
+                en: 'Ask anything...',
+                fa: 'هر سوالی داری بپرس...',
+                ar: 'اسأل أي شيء...',
+                tr: 'Bir şey sor...'
+            };
+            document.getElementById('userInput').placeholder = placeholderText[currentLanguage] || 'Ask anything...';
+            closeSettings();
+        });
+
+        // ===================== INIT =====================
+        function init() {
+            const savedMode = localStorage.getItem('ds_mode');
+            const savedLang = localStorage.getItem('ds_lang');
+            if (savedMode) {
+                selectedMode = savedMode;
+                document.getElementById('modeSelectScreen').classList.add('hidden');
+                document.getElementById('headerSubtitle').textContent = selectedMode === 'expert' ? 'Expert' : 'Instant';
+                document.getElementById('currentModeDisplay').textContent = selectedMode === 'expert' ? 'Expert' : 'Instant';
+            }
+            if (savedLang) {
+                currentLanguage = savedLang;
+                document.getElementById('languageSelect').value = savedLang;
+            }
+
+            const saved = localStorage.getItem('ds_chat_v3');
+            if (saved) {
+                try { conversationHistory = JSON.parse(saved); } catch(e) { conversationHistory = []; }
+            }
+            if (!conversationHistory.length) {
+                const welcome = {
+                    en: '👋 Hey! Welcome to **DeepSeek**.\n\nI\'m ready to help. Just ask anything!',
+                    fa: '👋 سلام! به **DeepSeek** خوش اومدی.\n\nمن آماده‌ام که کمکت کنم. هر سوالی داری بپرس!',
+                    ar: '👋 مرحباً! أهلاً بك في **DeepSeek**.\n\nأنا جاهز للمساعدة. اسأل أي شيء!',
+                    tr: '👋 Merhaba! **DeepSeek**\'e hoş geldin.\n\nYardıma hazırım. Bir şey sor!'
+                };
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: welcome[currentLanguage] || welcome.en
+                });
+                saveHistory();
+            }
+            renderChat();
+            setupTextarea();
+        }
+
+        function renderChat() {
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = '';
+            conversationHistory.forEach(msg => {
+                if (msg.role === 'user' || msg.role === 'assistant') {
+                    const div = document.createElement('div');
+                    div.className = `message ${msg.role === 'user' ? 'user' : 'bot'}`;
+                    div.innerHTML = `
+                        <div class="msg-avatar">${msg.role === 'user' ? '👤' : '🧠'}</div>
+                        <div class="bubble">${formatText(msg.content)}</div>
+                    `;
+                    container.appendChild(div);
+                }
+            });
+            requestAnimationFrame(() => container.scrollTop = container.scrollHeight);
+        }
+
+        function formatText(t) {
+            t = t.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            t = t.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+            t = t.replace(/`(.*?)`/g, '<code>$1</code>');
+            t = t.replace(/\n/g, '<br>');
+            return t;
+        }
+
+        async function callAPI(userMsg) {
+            const sysPrompt = systemPrompts[currentLanguage]?.[selectedMode] || systemPrompts.en[selectedMode];
+            const messages = [
+                { role: 'system', content: sysPrompt },
+                ...conversationHistory.slice(-16),
+                { role: 'user', content: userMsg }
+            ];
+            const res = await fetch(API_CONFIG.baseUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_CONFIG.apiKey}`,
+                    'HTTP-Referer': 'https://deepseek-local.app',
+                    'X-Title': 'DeepSeek AI'
+                },
+                body: JSON.stringify({
+                    model: API_CONFIG.model,
+                    messages,
+                    temperature: selectedMode === 'expert' ? 0.5 : 0.9,
+                    max_tokens: selectedMode === 'expert' ? 4096 : 1024
+                })
+            });
+            if (!res.ok) throw new Error('API error');
+            const data = await res.json();
+            return data.choices[0].message.content;
+        }
+
+        async function sendMessage() {
+            if (isProcessing || !selectedMode) return;
+            const textarea = document.getElementById('userInput');
+            const msg = textarea.value.trim();
+            if (!msg) return;
+
+            conversationHistory.push({ role: 'user', content: msg });
+            textarea.value = '';
+            textarea.style.height = '48px';
+            renderChat();
+            saveHistory();
+
+            showTyping();
+            isProcessing = true;
+            document.getElementById('sendBtn').disabled = true;
+
+            try {
+                const reply = await callAPI(msg);
+                removeTyping();
+                conversationHistory.push({ role: 'assistant', content: reply });
+                renderChat();
+                saveHistory();
+            } catch(e) {
+                removeTyping();
+                const errMsg = {
+                    en: '⚠️ Connection error. Please try again.',
+                    fa: '⚠️ خطا در اتصال. لطفاً دوباره تلاش کن.',
+                    ar: '⚠️ خطأ في الاتصال. حاول مرة أخرى.',
+                    tr: '⚠️ Bağlantı hatası. Lütfen tekrar dene.'
+                };
+                conversationHistory.push({ role: 'assistant', content: errMsg[currentLanguage] || errMsg.en });
+                renderChat();
+                saveHistory();
+            } finally {
+                isProcessing = false;
+                document.getElementById('sendBtn').disabled = false;
+                textarea.focus();
+            }
+        }
+
+        function showTyping() {
+            const c = document.getElementById('chatContainer');
+            const d = document.createElement('div');
+            d.className = 'message bot';
+            d.id = 'typing';
+            d.innerHTML = '<div class="msg-avatar">🧠</div><div class="bubble typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+            c.appendChild(d);
+            c.scrollTop = c.scrollHeight;
+        }
+
+        function removeTyping() {
+            const t = document.getElementById('typing');
+            if (t) t.remove();
+        }
+
+        function saveHistory() {
+            localStorage.setItem('ds_chat_v3', JSON.stringify(conversationHistory));
+        }
+
+        function clearHistory() {
+            if (confirm('Clear history?')) {
+                conversationHistory = [];
+                saveHistory();
+                init();
+            }
+        }
+
+        function setupTextarea() {
+            const ta = document.getElementById('userInput');
+            ta.addEventListener('input', () => {
+                ta.style.height = '48px';
+                ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+            });
+            ta.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+
+        // Check if mode already selected
+        const savedMode = localStorage.getItem('ds_mode');
+        if (!savedMode) {
+            document.getElementById('modeSelectScreen').classList.remove('hidden');
+        } else {
+            selectMode(savedMode);
+        }
+
+        // Also init if mode already selected
+        if (savedMode) {
+            init();
+        }
+    </script>
+</body>
+</html>
