@@ -1,8 +1,13 @@
+<!-- 
+    © 2026 Sepahr. All rights reserved.
+    This code is protected by copyright law.
+    Unauthorized copying, modification, or distribution is strictly prohibited.
+-->
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>DeepSeek AI · Expert & Instant</title>
     <style>
         * {
@@ -33,11 +38,14 @@
             color: var(--text-primary);
             font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
             height: 100vh;
+            height: 100dvh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            position: fixed;
+            inset: 0;
         }
 
         /* Header */
@@ -50,6 +58,7 @@
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
             backdrop-filter: blur(20px);
+            z-index: 10;
         }
 
         .logo-area {
@@ -235,6 +244,7 @@
             display: flex;
             flex-direction: column;
             gap: 14px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .chat-container::-webkit-scrollbar {
@@ -351,11 +361,13 @@
         .input-area {
             background: var(--bg-secondary);
             border-top: 1px solid var(--border);
-            padding: 12px 16px 16px;
+            padding: 12px 16px;
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
             display: flex;
             gap: 10px;
             align-items: flex-end;
             flex-shrink: 0;
+            z-index: 10;
         }
 
         .input-box {
@@ -364,9 +376,9 @@
             border-radius: 28px;
             border: 1.5px solid var(--border);
             display: flex;
-            align-items: flex-end;
+            align-items: center;
             transition: all 0.3s;
-            padding: 4px;
+            padding: 4px 4px 4px 18px;
         }
 
         .input-box:focus-within {
@@ -374,23 +386,21 @@
             box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
         }
 
-        .input-box textarea {
+        .input-box input {
             flex: 1;
             border: none;
             background: transparent;
             color: var(--text-primary);
             font-size: 15px;
-            padding: 12px 16px;
-            resize: none;
+            padding: 12px 0;
             outline: none;
             font-family: inherit;
             line-height: 1.5;
-            max-height: 120px;
-            min-height: 24px;
-            height: 48px;
+            width: 100%;
+            min-width: 0;
         }
 
-        .input-box textarea::placeholder {
+        .input-box input::placeholder {
             color: #64748b;
         }
 
@@ -418,6 +428,18 @@
         .send-btn:disabled {
             opacity: 0.3;
             pointer-events: none;
+        }
+        
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 12px 20px;
+            text-align: center;
+            color: #666;
+            font-size: 11px;
+            flex-shrink: 0;
+            z-index: 5;
         }
     </style>
 </head>
@@ -479,31 +501,39 @@
     <!-- Input -->
     <div class="input-area">
         <div class="input-box">
-            <textarea id="userInput" rows="1" placeholder="Ask anything..." autocomplete="off"></textarea>
+            <input type="text" id="userInput" placeholder="Ask anything..." autocomplete="off" inputmode="text" enterkeyhint="send">
         </div>
         <button class="send-btn" id="sendBtn" onclick="sendMessage()">▲</button>
     </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        © 2026 Sepahr. All rights reserved. | Built with ❤️ using DeepSeek-V3
+    </div>
 
     <script>
+        // ===================== CONFIG =====================
         const API_CONFIG = {
             baseUrl: 'https://openrouter.ai/api/v1/chat/completions',
             apiKey: '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',
             model: 'deepseek/deepseek-chat-v3-0324'
         };
 
+        // ===================== STATE =====================
         let conversationHistory = [];
-        let selectedMode = null; // 'expert' or 'instant'
+        let selectedMode = null;
         let currentLanguage = 'en';
         let isProcessing = false;
 
+        // ===================== SYSTEM PROMPTS =====================
         const systemPrompts = {
             en: {
-                expert: 'You are an expert AI assistant. Provide detailed, comprehensive, and deeply reasoned answers. Use examples and explain thoroughly. Be professional and precise.',
-                instant: 'You are a fast AI assistant. Provide short, concise, and to-the-point answers. No fluff, just the essential information. Be direct and efficient.'
+                expert: 'You are an expert AI assistant. Provide detailed, comprehensive, and deeply reasoned answers. Use examples and explain thoroughly.',
+                instant: 'You are a fast AI assistant. Provide short, concise, and to-the-point answers. No fluff, just the essential information.'
             },
             fa: {
-                expert: 'تو یک دستیار هوش مصنوعی متخصص هستی. پاسخ‌های جامع، دقیق و با استدلال عمیق بده. از مثال استفاده کن و کامل توضیح بده.',
-                instant: 'تو یک دستیار سریع هستی. پاسخ‌های کوتاه، مختصر و مفید بده. فقط اطلاعات ضروری را بگو. مستقیم و کارآمد باش.'
+                expert: 'تو یک دستیار هوش مصنوعی متخصص هستی. پاسخ‌های جامع، دقیق و با استدلال عمیق بده.',
+                instant: 'تو یک دستیار سریع هستی. پاسخ‌های کوتاه، مختصر و مفید بده.'
             }
         };
 
@@ -514,8 +544,9 @@
             document.getElementById('modeSelectScreen').classList.add('hidden');
             document.getElementById('headerSubtitle').textContent = mode === 'expert' ? 'Expert' : 'Instant';
             document.getElementById('currentModeDisplay').textContent = mode === 'expert' ? 'Expert' : 'Instant';
-            document.getElementById('userInput').placeholder = 'Ask anything...';
+            updatePlaceholder();
             init();
+            document.getElementById('userInput').focus();
         }
 
         document.querySelectorAll('.mode-card').forEach(card => {
@@ -536,41 +567,37 @@
         document.getElementById('languageSelect').addEventListener('change', function() {
             currentLanguage = this.value;
             localStorage.setItem('ds_lang', currentLanguage);
-            const placeholderText = {
+            updatePlaceholder();
+            closeSettings();
+        });
+
+        function updatePlaceholder() {
+            const placeholders = {
                 en: 'Ask anything...',
                 fa: 'هر سوالی داری بپرس...',
                 ar: 'اسأل أي شيء...',
                 tr: 'Bir şey sor...'
             };
-            document.getElementById('userInput').placeholder = placeholderText[currentLanguage] || 'Ask anything...';
-            closeSettings();
-        });
+            document.getElementById('userInput').placeholder = placeholders[currentLanguage] || 'Ask anything...';
+        }
 
         // ===================== INIT =====================
         function init() {
-            const savedMode = localStorage.getItem('ds_mode');
             const savedLang = localStorage.getItem('ds_lang');
-            if (savedMode) {
-                selectedMode = savedMode;
-                document.getElementById('modeSelectScreen').classList.add('hidden');
-                document.getElementById('headerSubtitle').textContent = selectedMode === 'expert' ? 'Expert' : 'Instant';
-                document.getElementById('currentModeDisplay').textContent = selectedMode === 'expert' ? 'Expert' : 'Instant';
-            }
             if (savedLang) {
                 currentLanguage = savedLang;
                 document.getElementById('languageSelect').value = savedLang;
             }
+            updatePlaceholder();
 
-            const saved = localStorage.getItem('ds_chat_v3');
+            const saved = localStorage.getItem('ds_chat_v4');
             if (saved) {
                 try { conversationHistory = JSON.parse(saved); } catch(e) { conversationHistory = []; }
             }
             if (!conversationHistory.length) {
                 const welcome = {
                     en: '👋 Hey! Welcome to **DeepSeek**.\n\nI\'m ready to help. Just ask anything!',
-                    fa: '👋 سلام! به **DeepSeek** خوش اومدی.\n\nمن آماده‌ام که کمکت کنم. هر سوالی داری بپرس!',
-                    ar: '👋 مرحباً! أهلاً بك في **DeepSeek**.\n\nأنا جاهز للمساعدة. اسأل أي شيء!',
-                    tr: '👋 Merhaba! **DeepSeek**\'e hoş geldin.\n\nYardıma hazırım. Bir şey sor!'
+                    fa: '👋 سلام! به **DeepSeek** خوش اومدی.\n\nمن آماده‌ام که کمکت کنم. هر سوالی داری بپرس!'
                 };
                 conversationHistory.push({
                     role: 'assistant',
@@ -579,7 +606,11 @@
                 saveHistory();
             }
             renderChat();
-            setupTextarea();
+            
+            // اطمینان از اینکه فیلد تایپ همیشه فعال باشه
+            setTimeout(() => {
+                document.getElementById('userInput').focus();
+            }, 500);
         }
 
         function renderChat() {
@@ -607,6 +638,7 @@
             return t;
         }
 
+        // ===================== API CALL =====================
         async function callAPI(userMsg) {
             const sysPrompt = systemPrompts[currentLanguage]?.[selectedMode] || systemPrompts.en[selectedMode];
             const messages = [
@@ -619,7 +651,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${API_CONFIG.apiKey}`,
-                    'HTTP-Referer': 'https://deepseek-local.app',
+                    'HTTP-Referer': 'https://s75577947-droid.github.io',
                     'X-Title': 'DeepSeek AI'
                 },
                 body: JSON.stringify({
@@ -634,15 +666,15 @@
             return data.choices[0].message.content;
         }
 
+        // ===================== SEND =====================
         async function sendMessage() {
             if (isProcessing || !selectedMode) return;
-            const textarea = document.getElementById('userInput');
-            const msg = textarea.value.trim();
+            const input = document.getElementById('userInput');
+            const msg = input.value.trim();
             if (!msg) return;
 
             conversationHistory.push({ role: 'user', content: msg });
-            textarea.value = '';
-            textarea.style.height = '48px';
+            input.value = '';
             renderChat();
             saveHistory();
 
@@ -660,9 +692,7 @@
                 removeTyping();
                 const errMsg = {
                     en: '⚠️ Connection error. Please try again.',
-                    fa: '⚠️ خطا در اتصال. لطفاً دوباره تلاش کن.',
-                    ar: '⚠️ خطأ في الاتصال. حاول مرة أخرى.',
-                    tr: '⚠️ Bağlantı hatası. Lütfen tekrar dene.'
+                    fa: '⚠️ خطا در اتصال. لطفاً دوباره تلاش کن.'
                 };
                 conversationHistory.push({ role: 'assistant', content: errMsg[currentLanguage] || errMsg.en });
                 renderChat();
@@ -670,10 +700,11 @@
             } finally {
                 isProcessing = false;
                 document.getElementById('sendBtn').disabled = false;
-                textarea.focus();
+                input.focus();
             }
         }
 
+        // ===================== TYPING INDICATOR =====================
         function showTyping() {
             const c = document.getElementById('chatContainer');
             const d = document.createElement('div');
@@ -689,8 +720,9 @@
             if (t) t.remove();
         }
 
+        // ===================== HELPERS =====================
         function saveHistory() {
-            localStorage.setItem('ds_chat_v3', JSON.stringify(conversationHistory));
+            localStorage.setItem('ds_chat_v4', JSON.stringify(conversationHistory));
         }
 
         function clearHistory() {
@@ -701,32 +733,24 @@
             }
         }
 
-        function setupTextarea() {
-            const ta = document.getElementById('userInput');
-            ta.addEventListener('input', () => {
-                ta.style.height = '48px';
-                ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
-            });
-            ta.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-        }
+        // ===================== ENTER KEY =====================
+        document.getElementById('userInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
 
-        // Check if mode already selected
+        // ===================== START =====================
         const savedMode = localStorage.getItem('ds_mode');
         if (!savedMode) {
             document.getElementById('modeSelectScreen').classList.remove('hidden');
         } else {
             selectMode(savedMode);
         }
-
-        // Also init if mode already selected
         if (savedMode) {
             init();
         }
     </script>
 </body>
-</html>
+                </html>
