@@ -1,5 +1,5 @@
 <!-- 
-    © 2026 Sepahr. All rights reserved.
+    © 2026 Sepehr. All rights reserved.
     This code is protected by copyright law.
     Unauthorized copying, modification, or distribution is strictly prohibited.
 -->
@@ -59,6 +59,8 @@
             flex-shrink: 0;
             backdrop-filter: blur(20px);
             z-index: 10;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .logo-area {
@@ -116,6 +118,18 @@
             border-color: var(--accent);
             color: white;
             transform: scale(0.95);
+        }
+
+        .quota-badge {
+            width: 100%;
+            text-align: center;
+            background: rgba(99,102,241,0.15);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--accent-light);
+            font-weight: 600;
+            order: 10;
         }
 
         /* Mode Selection Screen */
@@ -493,6 +507,7 @@
             <button class="icon-btn" onclick="openSettings()">⚙️</button>
             <button class="icon-btn" onclick="clearHistory()">🗑️</button>
         </div>
+        <div class="quota-badge" id="quotaDisplay"></div>
     </div>
 
     <!-- Chat -->
@@ -508,7 +523,7 @@
     
     <!-- Footer -->
     <div class="footer">
-        © 2026 Sepahr. All rights reserved. | Built with ❤️ using DeepSeek-V3
+        © 2026 Sepehr. All rights reserved. | Built with ❤️ using DeepSeek-V3
     </div>
 
     <script>
@@ -518,6 +533,8 @@
             apiKey: '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',
             model: 'deepseek/deepseek-chat-v3-0324'
         };
+
+        const DAILY_LIMIT = 20; // حداکثر ۲۰ پیام در روز
 
         // ===================== STATE =====================
         let conversationHistory = [];
@@ -536,6 +553,49 @@
                 instant: 'تو یک دستیار سریع هستی. پاسخ‌های کوتاه، مختصر و مفید بده.'
             }
         };
+
+        // ===================== DAILY QUOTA =====================
+        function getQuotaData() {
+            const saved = localStorage.getItem('ds_quota');
+            if (saved) {
+                try { return JSON.parse(saved); } catch(e) {}
+            }
+            return { date: new Date().toDateString(), count: 0 };
+        }
+
+        function saveQuotaData(data) {
+            localStorage.setItem('ds_quota', JSON.stringify(data));
+        }
+
+        function checkQuota() {
+            let quota = getQuotaData();
+            const today = new Date().toDateString();
+            
+            // ریست کردن اگه روز جدید شده
+            if (quota.date !== today) {
+                quota = { date: today, count: 0 };
+                saveQuotaData(quota);
+            }
+            
+            const remaining = DAILY_LIMIT - quota.count;
+            document.getElementById('quotaDisplay').textContent = `💬 ${remaining}/${DAILY_LIMIT} messages left today`;
+            
+            return { exceeded: quota.count >= DAILY_LIMIT, remaining };
+        }
+
+        function incrementQuota() {
+            let quota = getQuotaData();
+            const today = new Date().toDateString();
+            
+            if (quota.date !== today) {
+                quota = { date: today, count: 1 };
+            } else {
+                quota.count++;
+            }
+            
+            saveQuotaData(quota);
+            return DAILY_LIMIT - quota.count;
+        }
 
         // ===================== MODE SELECTION =====================
         function selectMode(mode) {
@@ -590,7 +650,7 @@
             }
             updatePlaceholder();
 
-            const saved = localStorage.getItem('ds_chat_v4');
+            const saved = localStorage.getItem('ds_chat_v5');
             if (saved) {
                 try { conversationHistory = JSON.parse(saved); } catch(e) { conversationHistory = []; }
             }
@@ -606,8 +666,8 @@
                 saveHistory();
             }
             renderChat();
+            checkQuota();
             
-            // اطمینان از اینکه فیلد تایپ همیشه فعال باشه
             setTimeout(() => {
                 document.getElementById('userInput').focus();
             }, 500);
@@ -669,6 +729,20 @@
         // ===================== SEND =====================
         async function sendMessage() {
             if (isProcessing || !selectedMode) return;
+            
+            // Check daily quota
+            const quotaCheck = checkQuota();
+            if (quotaCheck.exceeded) {
+                const limitMsg = {
+                    en: '⚠️ You have reached the daily limit of 20 messages. Please come back tomorrow!',
+                    fa: '⚠️ به سقف ۲۰ پیام در روز رسیدی. لطفاً فردا دوباره بیا!'
+                };
+                conversationHistory.push({ role: 'assistant', content: limitMsg[currentLanguage] || limitMsg.en });
+                renderChat();
+                saveHistory();
+                return;
+            }
+            
             const input = document.getElementById('userInput');
             const msg = input.value.trim();
             if (!msg) return;
@@ -688,6 +762,10 @@
                 conversationHistory.push({ role: 'assistant', content: reply });
                 renderChat();
                 saveHistory();
+                
+                // Increment quota after successful response
+                const remaining = incrementQuota();
+                checkQuota();
             } catch(e) {
                 removeTyping();
                 const errMsg = {
@@ -722,7 +800,7 @@
 
         // ===================== HELPERS =====================
         function saveHistory() {
-            localStorage.setItem('ds_chat_v4', JSON.stringify(conversationHistory));
+            localStorage.setItem('ds_chat_v5', JSON.stringify(conversationHistory));
         }
 
         function clearHistory() {
@@ -753,4 +831,4 @@
         }
     </script>
 </body>
-                </html>
+</html>
