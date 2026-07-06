@@ -7,13 +7,15 @@
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>DeepSeek AI · Expert & Instant</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         :root {
@@ -42,10 +44,9 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            position: fixed;
-            inset: 0;
+            margin: 0;
+            padding: 0;
+            width: 100%;
         }
 
         /* Header */
@@ -79,6 +80,7 @@
             justify-content: center;
             font-size: 24px;
             box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+            flex-shrink: 0;
         }
 
         .logo-text h2 {
@@ -99,18 +101,19 @@
         }
 
         .icon-btn {
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             border-radius: 12px;
             border: 1px solid var(--border);
             background: var(--bg-input);
             color: #94a3b8;
-            font-size: 18px;
+            font-size: 22px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+            touch-action: manipulation;
         }
 
         .icon-btn:active {
@@ -144,6 +147,7 @@
             justify-content: center;
             gap: 24px;
             padding: 20px;
+            touch-action: manipulation;
         }
 
         .mode-select-screen.hidden {
@@ -167,10 +171,12 @@
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 24px;
+            padding: 28px 24px;
             cursor: pointer;
             transition: all 0.2s;
             text-align: center;
+            touch-action: manipulation;
+            min-height: 120px;
         }
 
         .mode-card:active {
@@ -185,12 +191,12 @@
         }
 
         .mode-card h3 {
-            font-size: 20px;
+            font-size: 22px;
             margin-bottom: 8px;
         }
 
         .mode-card p {
-            font-size: 13px;
+            font-size: 14px;
             color: var(--text-secondary);
         }
 
@@ -204,6 +210,7 @@
             flex-direction: column;
             padding: 20px;
             overflow-y: auto;
+            touch-action: manipulation;
         }
 
         .settings-panel.hidden {
@@ -220,34 +227,42 @@
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
-            padding: 16px;
+            padding: 18px 16px;
             margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            touch-action: manipulation;
         }
 
         .setting-item select {
             background: var(--bg-input);
             border: 1px solid var(--border);
             color: white;
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 16px;
+            touch-action: manipulation;
         }
 
         .back-btn {
             margin-top: 24px;
-            padding: 14px;
+            padding: 16px;
             border-radius: var(--radius-sm);
             border: 1px solid var(--border);
             background: var(--accent);
             color: white;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             text-align: center;
+            touch-action: manipulation;
+        }
+
+        .back-btn:active {
+            opacity: 0.7;
+            transform: scale(0.97);
         }
 
         /* Chat */
@@ -259,6 +274,7 @@
             flex-direction: column;
             gap: 14px;
             -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
         }
 
         .chat-container::-webkit-scrollbar {
@@ -293,13 +309,13 @@
         }
 
         .msg-avatar {
-            width: 34px;
-            height: 34px;
+            width: 38px;
+            height: 38px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 18px;
             flex-shrink: 0;
             margin-top: 2px;
         }
@@ -317,7 +333,7 @@
             padding: 12px 16px;
             border-radius: 20px;
             line-height: 1.65;
-            font-size: 14px;
+            font-size: 15px;
             word-wrap: break-word;
             position: relative;
         }
@@ -378,7 +394,7 @@
             padding: 12px 16px;
             padding-bottom: max(16px, env(safe-area-inset-bottom));
             display: flex;
-            gap: 10px;
+            gap: 12px;
             align-items: flex-end;
             flex-shrink: 0;
             z-index: 10;
@@ -405,13 +421,14 @@
             border: none;
             background: transparent;
             color: var(--text-primary);
-            font-size: 15px;
-            padding: 12px 0;
+            font-size: 16px;
+            padding: 14px 0;
             outline: none;
             font-family: inherit;
             line-height: 1.5;
             width: 100%;
             min-width: 0;
+            touch-action: manipulation;
         }
 
         .input-box input::placeholder {
@@ -419,13 +436,13 @@
         }
 
         .send-btn {
-            width: 48px;
-            height: 48px;
+            width: 54px;
+            height: 54px;
             border-radius: 50%;
             border: none;
             background: var(--accent);
             color: white;
-            font-size: 22px;
+            font-size: 24px;
             cursor: pointer;
             flex-shrink: 0;
             display: flex;
@@ -433,6 +450,7 @@
             justify-content: center;
             transition: all 0.2s;
             box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+            touch-action: manipulation;
         }
 
         .send-btn:active {
@@ -491,7 +509,7 @@
             <span>📝 Current Mode</span>
             <span id="currentModeDisplay" style="color: var(--accent-light); font-weight: 600;"></span>
         </div>
-        <div class="back-btn" onclick="closeSettings()">Close Settings</div>
+        <div class="back-btn" id="settingsCloseBtn">Close Settings</div>
     </div>
 
     <!-- Header -->
@@ -504,8 +522,8 @@
             </div>
         </div>
         <div class="header-actions">
-            <button class="icon-btn" onclick="openSettings()">⚙️</button>
-            <button class="icon-btn" onclick="clearHistory()">🗑️</button>
+            <button class="icon-btn" id="settingsOpenBtn">⚙️</button>
+            <button class="icon-btn" id="clearBtn">🗑️</button>
         </div>
         <div class="quota-badge" id="quotaDisplay"></div>
     </div>
@@ -518,7 +536,7 @@
         <div class="input-box">
             <input type="text" id="userInput" placeholder="Ask anything..." autocomplete="off" inputmode="text" enterkeyhint="send">
         </div>
-        <button class="send-btn" id="sendBtn" onclick="sendMessage()">▲</button>
+        <button class="send-btn" id="sendBtn">▲</button>
     </div>
     
     <!-- Footer -->
@@ -528,13 +546,9 @@
 
     <script>
         // ===================== CONFIG =====================
-        const API_CONFIG = {
-            baseUrl: 'https://openrouter.ai/api/v1/chat/completions',
-            apiKey: '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',
-            model: 'deepseek/deepseek-chat-v3-0324'
-        };
-
-        const DAILY_LIMIT = 20; // حداکثر ۲۰ پیام در روز
+        const HF_TOKEN = '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';
+        const MODEL = 'mistralai/Mistral-7B-Instruct-v0.3';
+        const DAILY_LIMIT = 20;
 
         // ===================== STATE =====================
         let conversationHistory = [];
@@ -571,7 +585,6 @@
             let quota = getQuotaData();
             const today = new Date().toDateString();
             
-            // ریست کردن اگه روز جدید شده
             if (quota.date !== today) {
                 quota = { date: today, count: 0 };
                 saveQuotaData(quota);
@@ -610,7 +623,9 @@
         }
 
         document.querySelectorAll('.mode-card').forEach(card => {
-            card.addEventListener('click', () => selectMode(card.dataset.mode));
+            const handler = () => selectMode(card.dataset.mode);
+            card.addEventListener('click', handler);
+            card.addEventListener('touchstart', handler, { passive: true });
         });
 
         // ===================== SETTINGS =====================
@@ -623,6 +638,12 @@
             document.getElementById('settingsPanel').classList.add('hidden');
             document.getElementById('userInput').focus();
         }
+
+        document.getElementById('settingsOpenBtn').addEventListener('click', openSettings);
+        document.getElementById('settingsOpenBtn').addEventListener('touchstart', openSettings, { passive: true });
+        
+        document.getElementById('settingsCloseBtn').addEventListener('click', closeSettings);
+        document.getElementById('settingsCloseBtn').addEventListener('touchstart', closeSettings, { passive: true });
 
         document.getElementById('languageSelect').addEventListener('change', function() {
             currentLanguage = this.value;
@@ -650,7 +671,7 @@
             }
             updatePlaceholder();
 
-            const saved = localStorage.getItem('ds_chat_v5');
+            const saved = localStorage.getItem('ds_chat_v6');
             if (saved) {
                 try { conversationHistory = JSON.parse(saved); } catch(e) { conversationHistory = []; }
             }
@@ -706,21 +727,24 @@
                 ...conversationHistory.slice(-16),
                 { role: 'user', content: userMsg }
             ];
-            const res = await fetch(API_CONFIG.baseUrl, {
+            
+            const apiUrl = `https://api-inference.huggingface.co/models/${MODEL}/v1/chat/completions`;
+            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
+
+            const res = await fetch(proxyUrl, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${API_CONFIG.apiKey}`,
-                    'HTTP-Referer': 'https://s75577947-droid.github.io',
-                    'X-Title': 'DeepSeek AI'
+                    'Authorization': `Bearer ${HF_TOKEN}`,
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    model: API_CONFIG.model,
-                    messages,
-                    temperature: selectedMode === 'expert' ? 0.5 : 0.9,
-                    max_tokens: selectedMode === 'expert' ? 4096 : 1024
+                    model: MODEL,
+                    messages: messages,
+                    max_tokens: selectedMode === 'expert' ? 4096 : 1024,
+                    temperature: selectedMode === 'expert' ? 0.5 : 0.9
                 })
             });
+            
             if (!res.ok) throw new Error('API error');
             const data = await res.json();
             return data.choices[0].message.content;
@@ -730,7 +754,6 @@
         async function sendMessage() {
             if (isProcessing || !selectedMode) return;
             
-            // Check daily quota
             const quotaCheck = checkQuota();
             if (quotaCheck.exceeded) {
                 const limitMsg = {
@@ -763,8 +786,7 @@
                 renderChat();
                 saveHistory();
                 
-                // Increment quota after successful response
-                const remaining = incrementQuota();
+                incrementQuota();
                 checkQuota();
             } catch(e) {
                 removeTyping();
@@ -800,7 +822,7 @@
 
         // ===================== HELPERS =====================
         function saveHistory() {
-            localStorage.setItem('ds_chat_v5', JSON.stringify(conversationHistory));
+            localStorage.setItem('ds_chat_v6', JSON.stringify(conversationHistory));
         }
 
         function clearHistory() {
@@ -810,6 +832,13 @@
                 init();
             }
         }
+
+        document.getElementById('clearBtn').addEventListener('click', clearHistory);
+        document.getElementById('clearBtn').addEventListener('touchstart', clearHistory, { passive: true });
+
+        // ===================== SEND BUTTON =====================
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('sendBtn').addEventListener('touchstart', sendMessage, { passive: true });
 
         // ===================== ENTER KEY =====================
         document.getElementById('userInput').addEventListener('keydown', function(e) {
