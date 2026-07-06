@@ -546,8 +546,6 @@
 
     <script>
         // ===================== CONFIG =====================
-        const HF_TOKEN = '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';
-        const MODEL = 'mistralai/Mistral-7B-Instruct-v0.3';
         const DAILY_LIMIT = 20;
 
         // ===================== STATE =====================
@@ -622,6 +620,7 @@
             document.getElementById('userInput').focus();
         }
 
+        // Use both click and touch for mode cards
         document.querySelectorAll('.mode-card').forEach(card => {
             const handler = () => selectMode(card.dataset.mode);
             card.addEventListener('click', handler);
@@ -671,14 +670,14 @@
             }
             updatePlaceholder();
 
-            const saved = localStorage.getItem('ds_chat_v6');
+            const saved = localStorage.getItem('ds_chat_v5');
             if (saved) {
                 try { conversationHistory = JSON.parse(saved); } catch(e) { conversationHistory = []; }
             }
             if (!conversationHistory.length) {
                 const welcome = {
-                    en: '👋 Hey! Welcome to **DeepSeek**.\n\nI\'m ready to help. Just ask anything!',
-                    fa: '👋 سلام! به **DeepSeek** خوش اومدی.\n\nمن آماده‌ام که کمکت کنم. هر سوالی داری بپرس!'
+                    en: '👋 Hey! Welcome to **DeepSeek**.\n\n🔧 Servers are currently updating...\n\nPlease come back next week! 🚀',
+                    fa: '👋 سلام! به **DeepSeek** خوش اومدی.\n\n🔧 سرورها در حال بروزرسانی هستند...\n\nلطفاً هفته آینده دوباره سر بزن! 🚀'
                 };
                 conversationHistory.push({
                     role: 'assistant',
@@ -719,52 +718,9 @@
             return t;
         }
 
-        // ===================== API CALL =====================
-        async function callAPI(userMsg) {
-            const sysPrompt = systemPrompts[currentLanguage]?.[selectedMode] || systemPrompts.en[selectedMode];
-            const messages = [
-                { role: 'system', content: sysPrompt },
-                ...conversationHistory.slice(-16),
-                { role: 'user', content: userMsg }
-            ];
-            
-            const apiUrl = `https://api-inference.huggingface.co/models/${MODEL}/v1/chat/completions`;
-            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
-
-            const res = await fetch(proxyUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${HF_TOKEN}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: MODEL,
-                    messages: messages,
-                    max_tokens: selectedMode === 'expert' ? 4096 : 1024,
-                    temperature: selectedMode === 'expert' ? 0.5 : 0.9
-                })
-            });
-            
-            if (!res.ok) throw new Error('API error');
-            const data = await res.json();
-            return data.choices[0].message.content;
-        }
-
-        // ===================== SEND =====================
+        // ===================== SEND (always shows update message) =====================
         async function sendMessage() {
             if (isProcessing || !selectedMode) return;
-            
-            const quotaCheck = checkQuota();
-            if (quotaCheck.exceeded) {
-                const limitMsg = {
-                    en: '⚠️ You have reached the daily limit of 20 messages. Please come back tomorrow!',
-                    fa: '⚠️ به سقف ۲۰ پیام در روز رسیدی. لطفاً فردا دوباره بیا!'
-                };
-                conversationHistory.push({ role: 'assistant', content: limitMsg[currentLanguage] || limitMsg.en });
-                renderChat();
-                saveHistory();
-                return;
-            }
             
             const input = document.getElementById('userInput');
             const msg = input.value.trim();
@@ -779,29 +735,19 @@
             isProcessing = true;
             document.getElementById('sendBtn').disabled = true;
 
-            try {
-                const reply = await callAPI(msg);
+            setTimeout(() => {
                 removeTyping();
-                conversationHistory.push({ role: 'assistant', content: reply });
-                renderChat();
-                saveHistory();
-                
-                incrementQuota();
-                checkQuota();
-            } catch(e) {
-                removeTyping();
-                const errMsg = {
-                    en: '⚠️ Connection error. Please try again.',
-                    fa: '⚠️ خطا در اتصال. لطفاً دوباره تلاش کن.'
+                const updateMsg = {
+                    en: '🔧 Servers are currently updating...\n\nPlease come back next week! 🚀',
+                    fa: '🔧 سرورها در حال بروزرسانی هستند...\n\nلطفاً هفته آینده دوباره سر بزن! 🚀'
                 };
-                conversationHistory.push({ role: 'assistant', content: errMsg[currentLanguage] || errMsg.en });
+                conversationHistory.push({ role: 'assistant', content: updateMsg[currentLanguage] || updateMsg.en });
                 renderChat();
                 saveHistory();
-            } finally {
                 isProcessing = false;
                 document.getElementById('sendBtn').disabled = false;
                 input.focus();
-            }
+            }, 1500);
         }
 
         // ===================== TYPING INDICATOR =====================
@@ -822,7 +768,7 @@
 
         // ===================== HELPERS =====================
         function saveHistory() {
-            localStorage.setItem('ds_chat_v6', JSON.stringify(conversationHistory));
+            localStorage.setItem('ds_chat_v5', JSON.stringify(conversationHistory));
         }
 
         function clearHistory() {
