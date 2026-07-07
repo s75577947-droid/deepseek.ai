@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>DeepSeek AI · Expert & Instant</title>
+    <title>DeepSeek AI · Multi-Model</title>
     <style>
         * {
             margin: 0;
@@ -32,7 +32,6 @@
             --radius-lg: 24px;
             --radius-md: 16px;
             --radius-sm: 12px;
-            --shadow-lg: 0 25px 50px -12px rgba(0,0,0,0.5);
         }
 
         body {
@@ -49,7 +48,6 @@
             width: 100%;
         }
 
-        /* Header */
         .header {
             background: var(--bg-secondary);
             padding: 16px 20px;
@@ -64,12 +62,7 @@
             gap: 8px;
         }
 
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
+        .logo-area { display: flex; align-items: center; gap: 12px; }
         .logo-icon {
             width: 44px;
             height: 44px;
@@ -82,24 +75,9 @@
             box-shadow: 0 4px 20px rgba(99,102,241,0.3);
             flex-shrink: 0;
         }
-
-        .logo-text h2 {
-            font-size: 18px;
-            font-weight: 600;
-            color: #f1f5f9;
-            letter-spacing: -0.3px;
-        }
-
-        .logo-text span {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 8px;
-        }
-
+        .logo-text h2 { font-size: 18px; font-weight: 600; color: #f1f5f9; }
+        .logo-text span { font-size: 11px; color: var(--text-secondary); }
+        .header-actions { display: flex; gap: 8px; }
         .icon-btn {
             width: 48px;
             height: 48px;
@@ -113,29 +91,44 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
-            touch-action: manipulation;
+        }
+        .icon-btn:active { background: var(--accent); border-color: var(--accent); color: white; transform: scale(0.95); }
+
+        .model-bar {
+            display: flex;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            flex-shrink: 0;
         }
 
-        .icon-btn:active {
+        .model-chip {
+            padding: 8px 18px;
+            border-radius: 25px;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            font-size: 13px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .model-chip.active {
             background: var(--accent);
             border-color: var(--accent);
             color: white;
-            transform: scale(0.95);
+            box-shadow: 0 0 15px rgba(99,102,241,0.3);
         }
 
-        .quota-badge {
-            width: 100%;
-            text-align: center;
-            background: rgba(99,102,241,0.15);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: var(--accent-light);
-            font-weight: 600;
-            order: 10;
-        }
+        .model-chip .chip-icon { font-size: 18px; }
 
-        /* Mode Selection Screen */
         .mode-select-screen {
             position: fixed;
             inset: 0;
@@ -147,24 +140,10 @@
             justify-content: center;
             gap: 24px;
             padding: 20px;
-            touch-action: manipulation;
         }
-
-        .mode-select-screen.hidden {
-            display: none;
-        }
-
-        .mode-select-screen h2 {
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-
-        .mode-select-screen p {
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-            text-align: center;
-        }
-
+        .mode-select-screen.hidden { display: none; }
+        .mode-select-screen h2 { font-size: 28px; margin-bottom: 8px; }
+        .mode-select-screen p { color: var(--text-secondary); margin-bottom: 32px; text-align: center; }
         .mode-card {
             width: 100%;
             max-width: 360px;
@@ -175,97 +154,13 @@
             cursor: pointer;
             transition: all 0.2s;
             text-align: center;
-            touch-action: manipulation;
             min-height: 120px;
         }
+        .mode-card:active { border-color: var(--accent); box-shadow: 0 0 30px rgba(99,102,241,0.2); transform: scale(0.98); }
+        .mode-card .mode-icon { font-size: 48px; margin-bottom: 12px; }
+        .mode-card h3 { font-size: 22px; margin-bottom: 8px; }
+        .mode-card p { font-size: 14px; color: var(--text-secondary); }
 
-        .mode-card:active {
-            border-color: var(--accent);
-            box-shadow: 0 0 30px rgba(99,102,241,0.2);
-            transform: scale(0.98);
-        }
-
-        .mode-card .mode-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
-        }
-
-        .mode-card h3 {
-            font-size: 22px;
-            margin-bottom: 8px;
-        }
-
-        .mode-card p {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        /* Settings Panel */
-        .settings-panel {
-            position: fixed;
-            inset: 0;
-            background: var(--bg-primary);
-            z-index: 1001;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            overflow-y: auto;
-            touch-action: manipulation;
-        }
-
-        .settings-panel.hidden {
-            display: none;
-        }
-
-        .settings-panel h2 {
-            font-size: 24px;
-            margin-bottom: 24px;
-            text-align: center;
-        }
-
-        .setting-item {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 18px 16px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-
-        .setting-item select {
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 16px;
-            touch-action: manipulation;
-        }
-
-        .back-btn {
-            margin-top: 24px;
-            padding: 16px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-            background: var(--accent);
-            color: white;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            touch-action: manipulation;
-        }
-
-        .back-btn:active {
-            opacity: 0.7;
-            transform: scale(0.97);
-        }
-
-        /* Chat */
         .chat-container {
             flex: 1;
             overflow-y: auto;
@@ -274,40 +169,15 @@
             flex-direction: column;
             gap: 14px;
             -webkit-overflow-scrolling: touch;
-            touch-action: pan-y;
         }
+        .chat-container::-webkit-scrollbar { width: 4px; }
+        .chat-container::-webkit-scrollbar-track { background: transparent; }
+        .chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-        .chat-container::-webkit-scrollbar {
-            width: 4px;
-        }
-        .chat-container::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .chat-container::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 10px;
-        }
-
-        .message {
-            display: flex;
-            gap: 10px;
-            max-width: 88%;
-            animation: slideUp 0.3s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message.user {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-        .message.bot {
-            align-self: flex-start;
-        }
-
+        .message { display: flex; gap: 10px; max-width: 88%; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .message.user { align-self: flex-end; flex-direction: row-reverse; }
+        .message.bot { align-self: flex-start; }
         .msg-avatar {
             width: 38px;
             height: 38px;
@@ -319,58 +189,21 @@
             flex-shrink: 0;
             margin-top: 2px;
         }
-
-        .user .msg-avatar {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: white;
-        }
-        .bot .msg-avatar {
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-        }
-
+        .user .msg-avatar { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; }
+        .bot .msg-avatar { background: var(--bg-input); border: 1px solid var(--border); }
         .bubble {
             padding: 12px 16px;
             border-radius: 20px;
             line-height: 1.65;
             font-size: 15px;
             word-wrap: break-word;
-            position: relative;
         }
+        .user .bubble { background: #1e293b; border-bottom-right-radius: 6px; color: #e2e8f0; }
+        .bot .bubble { background: var(--bot-bubble); border: 1px solid var(--border); border-bottom-left-radius: 6px; color: #cbd5e1; }
+        .bubble pre { background: #0a0a14; padding: 14px; border-radius: 12px; overflow-x: auto; margin: 8px 0; border: 1px solid var(--border); }
+        .bubble code { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
 
-        .user .bubble {
-            background: #1e293b;
-            border-bottom-right-radius: 6px;
-            color: #e2e8f0;
-        }
-        .bot .bubble {
-            background: var(--bot-bubble);
-            border: 1px solid var(--border);
-            border-bottom-left-radius: 6px;
-            color: #cbd5e1;
-        }
-
-        .bubble pre {
-            background: #0a0a14;
-            padding: 14px;
-            border-radius: 12px;
-            overflow-x: auto;
-            margin: 8px 0;
-            border: 1px solid var(--border);
-        }
-
-        .bubble code {
-            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-            font-size: 13px;
-        }
-
-        /* Typing */
-        .typing-bubble {
-            display: flex;
-            gap: 6px;
-            padding: 14px 18px;
-        }
-
+        .typing-bubble { display: flex; gap: 6px; padding: 14px 18px; }
         .typing-dot {
             width: 7px;
             height: 7px;
@@ -378,16 +211,13 @@
             border-radius: 50%;
             animation: bounce 1.4s infinite;
         }
-
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
         @keyframes bounce {
             0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
             30% { transform: translateY(-7px); opacity: 1; }
         }
 
-        /* Input Area */
         .input-area {
             background: var(--bg-secondary);
             border-top: 1px solid var(--border);
@@ -399,7 +229,6 @@
             flex-shrink: 0;
             z-index: 10;
         }
-
         .input-box {
             flex: 1;
             background: var(--bg-input);
@@ -410,12 +239,7 @@
             transition: all 0.3s;
             padding: 4px 4px 4px 18px;
         }
-
-        .input-box:focus-within {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
-        }
-
+        .input-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(99,102,241,0.1); }
         .input-box input {
             flex: 1;
             border: none;
@@ -428,13 +252,8 @@
             line-height: 1.5;
             width: 100%;
             min-width: 0;
-            touch-action: manipulation;
         }
-
-        .input-box input::placeholder {
-            color: #64748b;
-        }
-
+        .input-box input::placeholder { color: #64748b; }
         .send-btn {
             width: 54px;
             height: 54px;
@@ -450,19 +269,10 @@
             justify-content: center;
             transition: all 0.2s;
             box-shadow: 0 4px 15px rgba(99,102,241,0.3);
-            touch-action: manipulation;
         }
-
-        .send-btn:active {
-            transform: scale(0.92);
-            background: #4f46e5;
-        }
-        .send-btn:disabled {
-            opacity: 0.3;
-            pointer-events: none;
-        }
+        .send-btn:active { transform: scale(0.92); background: #4f46e5; }
+        .send-btn:disabled { opacity: 0.3; pointer-events: none; }
         
-        /* Footer */
         .footer {
             background: var(--bg-secondary);
             border-top: 1px solid var(--border);
@@ -477,7 +287,6 @@
 </head>
 <body>
 
-    <!-- Mode Selection Screen -->
     <div class="mode-select-screen" id="modeSelectScreen">
         <h2>Choose Your Mode</h2>
         <p>This cannot be changed later</p>
@@ -493,45 +302,36 @@
         </div>
     </div>
 
-    <!-- Settings Panel -->
-    <div class="settings-panel hidden" id="settingsPanel">
-        <h2>Settings</h2>
-        <div class="setting-item">
-            <span>🌐 Language</span>
-            <select id="languageSelect">
-                <option value="en" selected>English</option>
-                <option value="fa">فارسی</option>
-                <option value="ar">العربية</option>
-                <option value="tr">Türkçe</option>
-            </select>
-        </div>
-        <div class="setting-item">
-            <span>📝 Current Mode</span>
-            <span id="currentModeDisplay" style="color: var(--accent-light); font-weight: 600;"></span>
-        </div>
-        <div class="back-btn" id="settingsCloseBtn">Close Settings</div>
-    </div>
-
-    <!-- Header -->
     <div class="header">
         <div class="logo-area">
             <div class="logo-icon">🧠</div>
             <div class="logo-text">
-                <h2>DeepSeek</h2>
-                <span id="headerSubtitle">Expert Mode</span>
+                <h2>DeepSeek AI</h2>
+                <span id="headerSubtitle">Multi-Model</span>
             </div>
         </div>
         <div class="header-actions">
-            <button class="icon-btn" id="settingsOpenBtn">⚙️</button>
             <button class="icon-btn" id="clearBtn">🗑️</button>
         </div>
-        <div class="quota-badge" id="quotaDisplay"></div>
     </div>
 
-    <!-- Chat -->
+    <div class="model-bar" id="modelBar">
+        <div class="model-chip active" data-model="deepseek">
+            <span class="chip-icon">🧠</span> DeepSeek
+        </div>
+        <div class="model-chip" data-model="gemini">
+            <span class="chip-icon">💎</span> Gemini
+        </div>
+        <div class="model-chip" data-model="chatgpt">
+            <span class="chip-icon">🤖</span> ChatGPT
+        </div>
+        <div class="model-chip" data-model="claude">
+            <span class="chip-icon">🎨</span> Claude
+        </div>
+    </div>
+
     <div class="chat-container" id="chatContainer"></div>
 
-    <!-- Input -->
     <div class="input-area">
         <div class="input-box">
             <input type="text" id="userInput" placeholder="Ask anything..." autocomplete="off" inputmode="text" enterkeyhint="send">
@@ -539,74 +339,36 @@
         <button class="send-btn" id="sendBtn">▲</button>
     </div>
     
-    <!-- Footer -->
     <div class="footer">
-        © 2026 Sepehr. All rights reserved. | Built with ❤️ using DeepSeek-V3
+        © 2026 Sepehr. All rights reserved. | Multi-Model AI
     </div>
 
     <script>
         // ===================== CONFIG =====================
+        const API_KEY = 'sk-l6JvinlbAgq2ghGPd8HhginBj7ldpgTn3jPUPuxZxlleyNea';
+        const BASE_URL = 'https://api.gapgpt.app/v1/chat/completions';
         const DAILY_LIMIT = 20;
 
-        // ===================== STATE =====================
-        let conversationHistory = [];
-        let selectedMode = null;
-        let currentLanguage = 'en';
-        let isProcessing = false;
-
-        // ===================== SYSTEM PROMPTS =====================
-        const systemPrompts = {
-            en: {
-                expert: 'You are an expert AI assistant. Provide detailed, comprehensive, and deeply reasoned answers. Use examples and explain thoroughly.',
-                instant: 'You are a fast AI assistant. Provide short, concise, and to-the-point answers. No fluff, just the essential information.'
-            },
-            fa: {
-                expert: 'تو یک دستیار هوش مصنوعی متخصص هستی. پاسخ‌های جامع، دقیق و با استدلال عمیق بده.',
-                instant: 'تو یک دستیار سریع هستی. پاسخ‌های کوتاه، مختصر و مفید بده.'
-            }
+        const MODEL_MAP = {
+            deepseek: 'deepseek/deepseek-chat-v3-0324',
+            gemini: 'gemini-2.5-flash',
+            chatgpt: 'gpt-5.3-chat-latest',
+            claude: 'claude-sonnet-5'
         };
 
-        // ===================== DAILY QUOTA =====================
-        function getQuotaData() {
-            const saved = localStorage.getItem('ds_quota');
-            if (saved) {
-                try { return JSON.parse(saved); } catch(e) {}
-            }
-            return { date: new Date().toDateString(), count: 0 };
-        }
+        let conversationHistory = [];
+        let selectedMode = null;
+        let currentModel = 'deepseek';
+        let isProcessing = false;
 
-        function saveQuotaData(data) {
-            localStorage.setItem('ds_quota', JSON.stringify(data));
-        }
-
-        function checkQuota() {
-            let quota = getQuotaData();
-            const today = new Date().toDateString();
-            
-            if (quota.date !== today) {
-                quota = { date: today, count: 0 };
-                saveQuotaData(quota);
-            }
-            
-            const remaining = DAILY_LIMIT - quota.count;
-            document.getElementById('quotaDisplay').textContent = `💬 ${remaining}/${DAILY_LIMIT} messages left today`;
-            
-            return { exceeded: quota.count >= DAILY_LIMIT, remaining };
-        }
-
-        function incrementQuota() {
-            let quota = getQuotaData();
-            const today = new Date().toDateString();
-            
-            if (quota.date !== today) {
-                quota = { date: today, count: 1 };
-            } else {
-                quota.count++;
-            }
-            
-            saveQuotaData(quota);
-            return DAILY_LIMIT - quota.count;
-        }
+        // ===================== MODEL SELECTION =====================
+        document.querySelectorAll('.model-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.model-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                currentModel = chip.dataset.model;
+            });
+        });
 
         // ===================== MODE SELECTION =====================
         function selectMode(mode) {
@@ -614,83 +376,46 @@
             localStorage.setItem('ds_mode', mode);
             document.getElementById('modeSelectScreen').classList.add('hidden');
             document.getElementById('headerSubtitle').textContent = mode === 'expert' ? 'Expert' : 'Instant';
-            document.getElementById('currentModeDisplay').textContent = mode === 'expert' ? 'Expert' : 'Instant';
-            updatePlaceholder();
             init();
             document.getElementById('userInput').focus();
         }
 
-        // Use both click and touch for mode cards
         document.querySelectorAll('.mode-card').forEach(card => {
-            const handler = () => selectMode(card.dataset.mode);
-            card.addEventListener('click', handler);
-            card.addEventListener('touchstart', handler, { passive: true });
+            card.addEventListener('click', () => selectMode(card.dataset.mode));
         });
 
-        // ===================== SETTINGS =====================
-        function openSettings() {
-            document.getElementById('settingsPanel').classList.remove('hidden');
-            document.getElementById('currentModeDisplay').textContent = selectedMode === 'expert' ? 'Expert' : 'Instant';
+        // ===================== HELPERS =====================
+        function getQuotaData() {
+            const saved = localStorage.getItem('ds_quota');
+            if (saved) try { return JSON.parse(saved); } catch(e) {}
+            return { date: new Date().toDateString(), count: 0 };
+        }
+        function saveQuotaData(data) { localStorage.setItem('ds_quota', JSON.stringify(data)); }
+        function checkQuota() {
+            let quota = getQuotaData();
+            const today = new Date().toDateString();
+            if (quota.date !== today) { quota = { date: today, count: 0 }; saveQuotaData(quota); }
+            return { exceeded: quota.count >= DAILY_LIMIT, remaining: DAILY_LIMIT - quota.count };
+        }
+        function incrementQuota() {
+            let quota = getQuotaData();
+            const today = new Date().toDateString();
+            if (quota.date !== today) { quota = { date: today, count: 1 }; } else { quota.count++; }
+            saveQuotaData(quota);
         }
 
-        function closeSettings() {
-            document.getElementById('settingsPanel').classList.add('hidden');
-            document.getElementById('userInput').focus();
-        }
-
-        document.getElementById('settingsOpenBtn').addEventListener('click', openSettings);
-        document.getElementById('settingsOpenBtn').addEventListener('touchstart', openSettings, { passive: true });
-        
-        document.getElementById('settingsCloseBtn').addEventListener('click', closeSettings);
-        document.getElementById('settingsCloseBtn').addEventListener('touchstart', closeSettings, { passive: true });
-
-        document.getElementById('languageSelect').addEventListener('change', function() {
-            currentLanguage = this.value;
-            localStorage.setItem('ds_lang', currentLanguage);
-            updatePlaceholder();
-            closeSettings();
-        });
-
-        function updatePlaceholder() {
-            const placeholders = {
-                en: 'Ask anything...',
-                fa: 'هر سوالی داری بپرس...',
-                ar: 'اسأل أي شيء...',
-                tr: 'Bir şey sor...'
-            };
-            document.getElementById('userInput').placeholder = placeholders[currentLanguage] || 'Ask anything...';
-        }
-
-        // ===================== INIT =====================
         function init() {
-            const savedLang = localStorage.getItem('ds_lang');
-            if (savedLang) {
-                currentLanguage = savedLang;
-                document.getElementById('languageSelect').value = savedLang;
-            }
-            updatePlaceholder();
-
-            const saved = localStorage.getItem('ds_chat_v5');
-            if (saved) {
-                try { conversationHistory = JSON.parse(saved); } catch(e) { conversationHistory = []; }
-            }
+            const saved = localStorage.getItem('ds_chat_v7');
+            if (saved) try { conversationHistory = JSON.parse(saved); } catch(e) { conversationHistory = []; }
             if (!conversationHistory.length) {
-                const welcome = {
-                    en: '🔧 Servers are currently updating...\n\nPlease come back next week! 🚀',
-                    fa: '🔧 سرورها در حال بروزرسانی هستند...\n\nلطفاً هفته آینده دوباره سر بزن! 🚀'
-                };
                 conversationHistory.push({
                     role: 'assistant',
-                    content: welcome[currentLanguage] || welcome.en
+                    content: '👋 Welcome to **DeepSeek AI**!\n\n🧠 Multi-Model Edition:\n• DeepSeek | 💎 Gemini | 🤖 ChatGPT | 🎨 Claude\n\nSelect your model above and ask anything!'
                 });
                 saveHistory();
             }
             renderChat();
-            checkQuota();
-            
-            setTimeout(() => {
-                document.getElementById('userInput').focus();
-            }, 500);
+            document.getElementById('userInput').focus();
         }
 
         function renderChat() {
@@ -700,10 +425,7 @@
                 if (msg.role === 'user' || msg.role === 'assistant') {
                     const div = document.createElement('div');
                     div.className = `message ${msg.role === 'user' ? 'user' : 'bot'}`;
-                    div.innerHTML = `
-                        <div class="msg-avatar">${msg.role === 'user' ? '👤' : '🧠'}</div>
-                        <div class="bubble">${formatText(msg.content)}</div>
-                    `;
+                    div.innerHTML = `<div class="msg-avatar">${msg.role === 'user' ? '👤' : '🧠'}</div><div class="bubble">${formatText(msg.content)}</div>`;
                     container.appendChild(div);
                 }
             });
@@ -718,92 +440,94 @@
             return t;
         }
 
-        // ===================== SEND (always shows update message) =====================
+        function saveHistory() { localStorage.setItem('ds_chat_v7', JSON.stringify(conversationHistory)); }
+
+        async function callAPI(userMsg) {
+            const messages = [
+                { role: 'system', content: 'You are a helpful AI assistant.' },
+                ...conversationHistory.slice(-16),
+                { role: 'user', content: userMsg }
+            ];
+            const res = await fetch(BASE_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: MODEL_MAP[currentModel],
+                    messages,
+                    temperature: 0.7,
+                    max_tokens: 2000
+                })
+            });
+            if (!res.ok) throw new Error('API error');
+            const data = await res.json();
+            return data.choices[0].message.content;
+        }
+
         async function sendMessage() {
             if (isProcessing || !selectedMode) return;
-            
+            const qc = checkQuota();
+            if (qc.exceeded) {
+                conversationHistory.push({ role: 'assistant', content: '⚠️ Daily limit reached. Come back tomorrow!' });
+                renderChat(); saveHistory(); return;
+            }
             const input = document.getElementById('userInput');
             const msg = input.value.trim();
             if (!msg) return;
 
             conversationHistory.push({ role: 'user', content: msg });
             input.value = '';
-            renderChat();
-            saveHistory();
-
+            renderChat(); saveHistory();
             showTyping();
             isProcessing = true;
             document.getElementById('sendBtn').disabled = true;
 
-            setTimeout(() => {
+            try {
+                const reply = await callAPI(msg);
                 removeTyping();
-                const updateMsg = {
-                    en: '🔧 Servers are currently updating...\n\nPlease come back next week! 🚀',
-                    fa: '🔧 سرورها در حال بروزرسانی هستند...\n\nلطفاً هفته آینده دوباره سر بزن! 🚀'
-                };
-                conversationHistory.push({ role: 'assistant', content: updateMsg[currentLanguage] || updateMsg.en });
-                renderChat();
-                saveHistory();
+                conversationHistory.push({ role: 'assistant', content: reply });
+                renderChat(); saveHistory();
+                incrementQuota();
+            } catch(e) {
+                removeTyping();
+                conversationHistory.push({ role: 'assistant', content: '⚠️ Connection error. Please try again.' });
+                renderChat(); saveHistory();
+            } finally {
                 isProcessing = false;
                 document.getElementById('sendBtn').disabled = false;
                 input.focus();
-            }, 1500);
+            }
         }
 
-        // ===================== TYPING INDICATOR =====================
         function showTyping() {
             const c = document.getElementById('chatContainer');
             const d = document.createElement('div');
             d.className = 'message bot';
             d.id = 'typing';
             d.innerHTML = '<div class="msg-avatar">🧠</div><div class="bubble typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
-            c.appendChild(d);
-            c.scrollTop = c.scrollHeight;
+            c.appendChild(d); c.scrollTop = c.scrollHeight;
         }
-
-        function removeTyping() {
-            const t = document.getElementById('typing');
-            if (t) t.remove();
-        }
-
-        // ===================== HELPERS =====================
-        function saveHistory() {
-            localStorage.setItem('ds_chat_v5', JSON.stringify(conversationHistory));
-        }
+        function removeTyping() { const t = document.getElementById('typing'); if (t) t.remove(); }
 
         function clearHistory() {
-            if (confirm('Clear history?')) {
-                conversationHistory = [];
-                saveHistory();
-                init();
-            }
+            if (confirm('Clear history?')) { conversationHistory = []; saveHistory(); init(); }
         }
 
         document.getElementById('clearBtn').addEventListener('click', clearHistory);
-        document.getElementById('clearBtn').addEventListener('touchstart', clearHistory, { passive: true });
-
-        // ===================== SEND BUTTON =====================
         document.getElementById('sendBtn').addEventListener('click', sendMessage);
-        document.getElementById('sendBtn').addEventListener('touchstart', sendMessage, { passive: true });
-
-        // ===================== ENTER KEY =====================
         document.getElementById('userInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
         });
 
-        // ===================== START =====================
         const savedMode = localStorage.getItem('ds_mode');
         if (!savedMode) {
             document.getElementById('modeSelectScreen').classList.remove('hidden');
         } else {
             selectMode(savedMode);
         }
-        if (savedMode) {
-            init();
-        }
+        if (savedMode) { init(); }
     </script>
 </body>
-</html>
+            </html>
