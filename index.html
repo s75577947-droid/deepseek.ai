@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>DeepSeek AI · Multi-Model</title>
+    <title>DeepSeek AI · Pro Secure</title>
     <style>
         * {
             margin: 0;
@@ -48,6 +48,24 @@
             width: 100%;
         }
 
+        .blocked-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-primary);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 24px;
+            padding: 20px;
+            text-align: center;
+        }
+        .blocked-screen.hidden { display: none; }
+        .blocked-screen .blocked-icon { font-size: 80px; }
+        .blocked-screen h2 { font-size: 24px; color: #ff4757; }
+        .blocked-screen p { font-size: 16px; color: var(--text-secondary); max-width: 300px; }
+
         .header {
             background: var(--bg-secondary);
             padding: 16px 20px;
@@ -61,7 +79,6 @@
             flex-wrap: wrap;
             gap: 8px;
         }
-
         .logo-area { display: flex; align-items: center; gap: 12px; }
         .logo-icon {
             width: 44px;
@@ -74,7 +91,10 @@
             font-size: 24px;
             box-shadow: 0 4px 20px rgba(99,102,241,0.3);
             flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s;
         }
+        .logo-icon:active { transform: scale(0.9); }
         .logo-text h2 { font-size: 18px; font-weight: 600; color: #f1f5f9; }
         .logo-text span { font-size: 11px; color: var(--text-secondary); }
         .header-actions { display: flex; gap: 8px; }
@@ -103,7 +123,6 @@
             overflow-x: auto;
             flex-shrink: 0;
         }
-
         .model-chip {
             padding: 8px 18px;
             border-radius: 25px;
@@ -119,15 +138,63 @@
             gap: 6px;
             flex-shrink: 0;
         }
-
         .model-chip.active {
             background: var(--accent);
             border-color: var(--accent);
             color: white;
             box-shadow: 0 0 15px rgba(99,102,241,0.3);
         }
-
         .model-chip .chip-icon { font-size: 18px; }
+
+        .admin-panel {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-primary);
+            z-index: 9998;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .admin-panel.hidden { display: none; }
+        .admin-panel h2 { font-size: 24px; margin-bottom: 24px; text-align: center; color: var(--accent-light); }
+        .admin-panel .admin-stats {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .admin-panel .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .admin-panel .user-item .ban-btn {
+            background: #ff4757;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .admin-close-btn {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            background: var(--accent);
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
 
         .mode-select-screen {
             position: fixed;
@@ -160,6 +227,94 @@
         .mode-card .mode-icon { font-size: 48px; margin-bottom: 12px; }
         .mode-card h3 { font-size: 22px; margin-bottom: 8px; }
         .mode-card p { font-size: 14px; color: var(--text-secondary); }
+
+        .settings-panel {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-primary);
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .settings-panel.hidden { display: none; }
+        .settings-panel h2 { font-size: 24px; margin-bottom: 24px; text-align: center; }
+        .setting-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .setting-item select {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .back-btn {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--accent);
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .chat-list-panel {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-primary);
+            z-index: 1002;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .chat-list-panel.hidden { display: none; }
+        .chat-list-panel h2 { font-size: 24px; margin-bottom: 24px; text-align: center; }
+        .chat-list-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-list-item .delete-chat-btn {
+            background: #ff4757;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .new-chat-btn {
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
 
         .chat-container {
             flex: 1;
@@ -202,6 +357,8 @@
         .bot .bubble { background: var(--bot-bubble); border: 1px solid var(--border); border-bottom-left-radius: 6px; color: #cbd5e1; }
         .bubble pre { background: #0a0a14; padding: 14px; border-radius: 12px; overflow-x: auto; margin: 8px 0; border: 1px solid var(--border); }
         .bubble code { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        .bubble img { max-width: 100%; border-radius: 12px; margin: 8px 0; }
+        .bubble video { max-width: 100%; border-radius: 12px; margin: 8px 0; }
 
         .typing-bubble { display: flex; gap: 6px; padding: 14px 18px; }
         .typing-dot {
@@ -224,10 +381,24 @@
             padding: 12px 16px;
             padding-bottom: max(16px, env(safe-area-inset-bottom));
             display: flex;
-            gap: 12px;
+            gap: 8px;
             align-items: flex-end;
             flex-shrink: 0;
             z-index: 10;
+        }
+        .attach-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: #94a3b8;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
         .input-box {
             flex: 1;
@@ -255,13 +426,13 @@
         }
         .input-box input::placeholder { color: #64748b; }
         .send-btn {
-            width: 54px;
-            height: 54px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             border: none;
             background: var(--accent);
             color: white;
-            font-size: 24px;
+            font-size: 22px;
             cursor: pointer;
             flex-shrink: 0;
             display: flex;
@@ -287,7 +458,23 @@
 </head>
 <body>
 
-    <div class="mode-select-screen" id="modeSelectScreen">
+    <div class="blocked-screen hidden" id="blockedScreen">
+        <div class="blocked-icon">🚫</div>
+        <h2>DeepSeek isn't available in this country</h2>
+        <p>Sorry, DeepSeek AI is not available in your region due to restrictions.</p>
+    </div>
+
+    <div class="admin-panel hidden" id="adminPanel">
+        <h2>👑 Admin Panel</h2>
+        <div class="admin-stats">
+            <strong>👥 Active Users: <span id="activeUsersCount">0</span></strong><br>
+            <strong>💬 Total Requests: <span id="totalRequestsCount">0</span></strong>
+        </div>
+        <div id="userListContainer"></div>
+        <div class="admin-close-btn" onclick="closeAdminPanel()">Close Admin Panel</div>
+    </div>
+
+    <div class="mode-select-screen hidden" id="modeSelectScreen">
         <h2>Choose Your Mode</h2>
         <p>This cannot be changed later</p>
         <div class="mode-card" data-mode="expert">
@@ -302,16 +489,42 @@
         </div>
     </div>
 
+    <div class="settings-panel hidden" id="settingsPanel">
+        <h2>Settings</h2>
+        <div class="setting-item">
+            <span>🌐 Language</span>
+            <select id="languageSelect">
+                <option value="en" selected>English</option>
+                <option value="fa">فارسی</option>
+                <option value="ar">العربية</option>
+                <option value="tr">Türkçe</option>
+            </select>
+        </div>
+        <div class="back-btn" onclick="closeSettings()">Close Settings</div>
+    </div>
+
+    <div class="chat-list-panel hidden" id="chatListPanel">
+        <h2>💬 Chats</h2>
+        <div id="chatListContainer"></div>
+        <div class="new-chat-btn" onclick="createNewChat()">+ New Chat</div>
+        <div class="back-btn" style="margin-top: 12px;" onclick="closeChatList()">Close</div>
+    </div>
+
     <div class="header">
         <div class="logo-area">
-            <div class="logo-icon">🧠</div>
+            <div class="logo-icon" id="logoIcon" onclick="handleLogoClick()">🧠</div>
             <div class="logo-text">
                 <h2>DeepSeek AI</h2>
-                <span id="headerSubtitle">Multi-Model</span>
+                <span id="currentChatName">New Chat</span>
             </div>
         </div>
         <div class="header-actions">
-            <button class="icon-btn" id="clearBtn">🗑️</button>
+            <span class="model-chip active" id="currentModelBadge" style="font-size: 11px; padding: 6px 12px;">
+                <span class="chip-icon">🧠</span> DeepSeek
+            </span>
+            <button class="icon-btn" id="chatListBtn" onclick="openChatList()">💬</button>
+            <button class="icon-btn" id="settingsBtn" onclick="openSettings()">⚙️</button>
+            <button class="icon-btn" id="clearBtn" onclick="clearCurrentChat()">🗑️</button>
         </div>
     </div>
 
@@ -333,6 +546,8 @@
     <div class="chat-container" id="chatContainer"></div>
 
     <div class="input-area">
+        <button class="attach-btn" id="attachBtn" onclick="document.getElementById('fileInput').click()">📎</button>
+        <input type="file" id="fileInput" style="display: none;" multiple onchange="handleFiles(this.files)">
         <div class="input-box">
             <input type="text" id="userInput" placeholder="Ask anything..." autocomplete="off" inputmode="text" enterkeyhint="send">
         </div>
@@ -340,57 +555,388 @@
     </div>
     
     <div class="footer">
-        © 2026 Sepehr. All rights reserved. | Multi-Model AI
+        © 2026 Sepehr. All rights reserved. | DeepSeek AI Pro
     </div>
 
     <script>
         // ===================== CONFIG =====================
-        const API_KEY = 'sk-l6JvinlbAgq2ghGPd8HhginBj7ldpgTn3jPUPuxZxlleyNea';
-        const BASE_URL = 'https://deepseekai-production-f564.up.railway.app/chat';
+        const BASE_URL = 'https://script.google.com/macros/s/AKfycbyLY7sqjKrB54llu0IXZP74mle_t7ffyfKaWymws4n6suT-zFejVepbyCU5HpdlIn4S/exec';
         const DAILY_LIMIT = 20;
+        const BLOCKED_COUNTRIES = ['US','GB','CA','AU','NZ','DE','FR','IT','ES','PT','NL','BE','AT','CH','SE','NO','DK','FI','IE','JP','KR'];
+        const MAX_REQUESTS_BEFORE_BAN = 5;
+        const ADMIN_CLICKS_REQUIRED = 60;
 
         const MODEL_MAP = {
-            deepseek: 'deepseek/deepseek-chat-v3-0324',
-            gemini: 'gemini-2.5-flash',
-            chatgpt: 'gpt-5.3-chat-latest',
-            claude: 'claude-sonnet-5'
+            deepseek: { name: 'DeepSeek', icon: '🧠', model: 'deepseek/deepseek-chat-v3-0324' },
+            gemini: { name: 'Gemini', icon: '💎', model: 'gemini-2.5-flash' },
+            chatgpt: { name: 'ChatGPT', icon: '🤖', model: 'gpt-5.3-chat-latest' },
+            claude: { name: 'Claude', icon: '🎨', model: 'claude-sonnet-5' }
         };
 
-        let conversationHistory = [];
-        let selectedMode = null;
-        let currentModel = 'deepseek';
+        const PLACEHOLDERS = {
+            en: 'Ask anything...',
+            fa: 'هر سوالی داری بپرس...',
+            ar: 'اسأل أي شيء...',
+            tr: 'Bir şey sor...'
+        };
+
+        let chats = {};
+        let currentChatId = null;
+        let currentLanguage = 'en';
         let isProcessing = false;
+        let logoClickCount = 0;
+        let clickTimer = null;
+        let userIP = 'Loading...';
+
+        // ===================== IP FETCH =====================
+        async function fetchUserIP() {
+            try {
+                const res = await fetch('https://api.ipify.org?format=json');
+                const data = await res.json();
+                userIP = data.ip;
+                localStorage.setItem('ds_real_ip', userIP);
+                return userIP;
+            } catch(e) {
+                const saved = localStorage.getItem('ds_real_ip');
+                if (saved) {
+                    userIP = saved;
+                    return saved;
+                }
+                userIP = 'Unknown';
+                return 'Unknown';
+            }
+        }
+
+        function getUserIP() {
+            return userIP || localStorage.getItem('ds_real_ip') || 'Unknown';
+        }
+
+        // ===================== IP TRACKING & BAN SYSTEM =====================
+        function getUserFingerprint() {
+            return getUserIP();
+        }
+
+        function getBannedUsers() {
+            const saved = localStorage.getItem('ds_banned_users');
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        function banUser(fingerprint) {
+            const banned = getBannedUsers();
+            if (!banned.includes(fingerprint)) {
+                banned.push(fingerprint);
+                localStorage.setItem('ds_banned_users', JSON.stringify(banned));
+            }
+        }
+
+        function isUserBanned() {
+            return getBannedUsers().includes(getUserIP());
+        }
+
+        function getUserRequestCount() {
+            const saved = localStorage.getItem('ds_request_counts');
+            const counts = saved ? JSON.parse(saved) : {};
+            const ip = getUserIP();
+            const today = new Date().toDateString();
+            
+            if (!counts[ip] || counts[ip].date !== today) {
+                counts[ip] = { date: today, count: 0 };
+                localStorage.setItem('ds_request_counts', JSON.stringify(counts));
+            }
+            
+            return counts[ip].count;
+        }
+
+        function incrementUserRequestCount() {
+            const saved = localStorage.getItem('ds_request_counts');
+            const counts = saved ? JSON.parse(saved) : {};
+            const ip = getUserIP();
+            const today = new Date().toDateString();
+            
+            if (!counts[ip] || counts[ip].date !== today) {
+                counts[ip] = { date: today, count: 1 };
+            } else {
+                counts[ip].count++;
+            }
+            
+            localStorage.setItem('ds_request_counts', JSON.stringify(counts));
+            
+            if (counts[ip].count > MAX_REQUESTS_BEFORE_BAN) {
+                banUser(ip);
+                return true;
+            }
+            
+            return false;
+        }
+
+        function getAllUserData() {
+            const saved = localStorage.getItem('ds_request_counts');
+            const counts = saved ? JSON.parse(saved) : {};
+            const banned = getBannedUsers();
+            
+            const users = Object.entries(counts).map(([ip, data]) => ({
+                ip: ip,
+                requests: data.count,
+                date: data.date,
+                banned: banned.includes(ip)
+            }));
+            
+            return users;
+        }
+
+        function getActiveUsersCount() {
+            const saved = localStorage.getItem('ds_request_counts');
+            if (!saved) return 0;
+            const counts = JSON.parse(saved);
+            const today = new Date().toDateString();
+            return Object.values(counts).filter(c => c.date === today).length;
+        }
+
+        function getTotalRequestsCount() {
+            const saved = localStorage.getItem('ds_request_counts');
+            if (!saved) return 0;
+            const counts = JSON.parse(saved);
+            const today = new Date().toDateString();
+            return Object.values(counts)
+                .filter(c => c.date === today)
+                .reduce((sum, c) => sum + c.count, 0);
+        }
+
+        // ===================== ADMIN PANEL =====================
+        function handleLogoClick() {
+            clearTimeout(clickTimer);
+            logoClickCount++;
+            
+            if (logoClickCount >= ADMIN_CLICKS_REQUIRED) {
+                logoClickCount = 0;
+                openAdminPanel();
+                return;
+            }
+            
+            clickTimer = setTimeout(() => {
+                logoClickCount = 0;
+            }, 1000);
+        }
+
+        function openAdminPanel() {
+            document.getElementById('adminPanel').classList.remove('hidden');
+            updateAdminPanel();
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminPanel').classList.add('hidden');
+        }
+
+        function updateAdminPanel() {
+            const users = getAllUserData();
+            document.getElementById('activeUsersCount').textContent = getActiveUsersCount();
+            document.getElementById('totalRequestsCount').textContent = getTotalRequestsCount();
+            
+            const container = document.getElementById('userListContainer');
+            container.innerHTML = '';
+            
+            if (users.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:var(--text-secondary);">No users yet.</p>';
+                return;
+            }
+            
+            users.forEach(user => {
+                const div = document.createElement('div');
+                div.className = 'user-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>🌐 IP:</strong> ${user.ip}<br>
+                        <strong>📊 Requests:</strong> ${user.requests} | 
+                        <strong>Status:</strong> ${user.banned ? '🚫 BANNED' : '✅ Active'}
+                    </div>
+                    ${!user.banned ? `<button class="ban-btn" onclick="banUserByAdmin('${user.ip}')">Ban</button>` : ''}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function banUserByAdmin(ip) {
+            banUser(ip);
+            updateAdminPanel();
+        }
+
+        // ===================== BLOCKED COUNTRIES =====================
+        async function checkCountry() {
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                return data.country_code;
+            } catch(e) { return null; }
+        }
+
+        // ===================== CHAT MANAGEMENT =====================
+        function generateChatName(mode, model) {
+            const topics = ['General', 'Coding', 'Creative', 'Science', 'Business', 'Fun', 'Learning', 'Ideas'];
+            const topic = topics[Math.floor(Math.random() * topics.length)];
+            const modeName = mode === 'expert' ? 'Deep' : 'Quick';
+            const modelName = MODEL_MAP[model].name;
+            return `${topic} (${modeName} · ${modelName})`;
+        }
+
+        function createNewChat() {
+            document.getElementById('modeSelectScreen').classList.remove('hidden');
+            document.getElementById('chatListPanel').classList.add('hidden');
+        }
+
+        function initNewChat(mode, model) {
+            const chatId = Date.now().toString();
+            const chatName = generateChatName(mode, model);
+            
+            chats[chatId] = {
+                name: chatName,
+                mode: mode,
+                model: model,
+                history: [{
+                    role: 'assistant',
+                    content: `👋 Welcome to **${chatName}**!\n\nI'm ready to help. Ask anything!`
+                }]
+            };
+            
+            saveChats();
+            switchToChat(chatId);
+            document.getElementById('modeSelectScreen').classList.add('hidden');
+            document.getElementById('userInput').focus();
+        }
+
+        function switchToChat(chatId) {
+            currentChatId = chatId;
+            const chat = chats[chatId];
+            document.getElementById('currentChatName').textContent = chat.name;
+            
+            const modelInfo = MODEL_MAP[chat.model];
+            document.getElementById('currentModelBadge').innerHTML = `<span class="chip-icon">${modelInfo.icon}</span> ${modelInfo.name}`;
+            
+            document.querySelectorAll('.model-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.model === chat.model);
+            });
+            
+            renderChat();
+        }
+
+        function openChatList() {
+            document.getElementById('chatListPanel').classList.remove('hidden');
+            renderChatList();
+        }
+
+        function closeChatList() {
+            document.getElementById('chatListPanel').classList.add('hidden');
+        }
+
+        function renderChatList() {
+            const container = document.getElementById('chatListContainer');
+            container.innerHTML = '';
+            
+            Object.entries(chats).forEach(([chatId, chat]) => {
+                const div = document.createElement('div');
+                div.className = 'chat-list-item';
+                div.innerHTML = `
+                    <span onclick="switchToChat('${chatId}'); closeChatList();">💬 ${chat.name}</span>
+                    <button class="delete-chat-btn" onclick="event.stopPropagation(); deleteChat('${chatId}')">🗑️</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function deleteChat(chatId) {
+            if (Object.keys(chats).length <= 1) {
+                alert('You must have at least one chat!');
+                return;
+            }
+            delete chats[chatId];
+            saveChats();
+            
+            if (currentChatId === chatId) {
+                const firstChatId = Object.keys(chats)[0];
+                switchToChat(firstChatId);
+            }
+            renderChatList();
+        }
+
+        function clearCurrentChat() {
+            if (confirm('Clear this chat history?')) {
+                chats[currentChatId].history = [];
+                saveChats();
+                renderChat();
+            }
+        }
 
         // ===================== MODEL SELECTION =====================
         document.querySelectorAll('.model-chip').forEach(chip => {
             chip.addEventListener('click', () => {
+                const model = chip.dataset.model;
                 document.querySelectorAll('.model-chip').forEach(c => c.classList.remove('active'));
                 chip.classList.add('active');
-                currentModel = chip.dataset.model;
+                
+                if (currentChatId) {
+                    chats[currentChatId].model = model;
+                    const modelInfo = MODEL_MAP[model];
+                    document.getElementById('currentModelBadge').innerHTML = `<span class="chip-icon">${modelInfo.icon}</span> ${modelInfo.name}`;
+                    saveChats();
+                }
             });
         });
 
         // ===================== MODE SELECTION =====================
-        function selectMode(mode) {
-            selectedMode = mode;
-            localStorage.setItem('ds_mode', mode);
-            document.getElementById('modeSelectScreen').classList.add('hidden');
-            document.getElementById('headerSubtitle').textContent = mode === 'expert' ? 'Expert' : 'Instant';
-            init();
-            document.getElementById('userInput').focus();
-        }
-
         document.querySelectorAll('.mode-card').forEach(card => {
-            card.addEventListener('click', () => selectMode(card.dataset.mode));
+            card.addEventListener('click', () => {
+                const mode = card.dataset.mode;
+                const currentModel = 'deepseek';
+                initNewChat(mode, currentModel);
+            });
         });
 
-        // ===================== HELPERS =====================
+        // ===================== SETTINGS =====================
+        function openSettings() {
+            document.getElementById('settingsPanel').classList.remove('hidden');
+        }
+        function closeSettings() {
+            document.getElementById('settingsPanel').classList.add('hidden');
+        }
+        document.getElementById('languageSelect').addEventListener('change', function() {
+            currentLanguage = this.value;
+            localStorage.setItem('ds_lang', currentLanguage);
+            document.getElementById('userInput').placeholder = PLACEHOLDERS[currentLanguage] || PLACEHOLDERS.en;
+            closeSettings();
+        });
+
+        // ===================== FILE HANDLING =====================
+        function handleFiles(files) {
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    let content = '';
+                    
+                    if (file.type.startsWith('image/')) {
+                        content = `<img src="${dataUrl}" alt="${file.name}" style="max-width:100%;border-radius:12px;">`;
+                    } else if (file.type.startsWith('video/')) {
+                        content = `<video src="${dataUrl}" controls style="max-width:100%;border-radius:12px;"></video>`;
+                    } else if (file.type.startsWith('audio/')) {
+                        content = `<audio src="${dataUrl}" controls style="max-width:100%;"></audio>`;
+                    } else {
+                        content = `📎 **${file.name}** (${(file.size / 1024).toFixed(1)} KB)`;
+                    }
+                    
+                    chats[currentChatId].history.push({ role: 'user', content: content });
+                    renderChat();
+                    saveChats();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ===================== QUOTA =====================
         function getQuotaData() {
-            const saved = localStorage.getItem('ds_quota');
+            const saved = localStorage.getItem('ds_quota_pro');
             if (saved) try { return JSON.parse(saved); } catch(e) {}
             return { date: new Date().toDateString(), count: 0 };
         }
-        function saveQuotaData(data) { localStorage.setItem('ds_quota', JSON.stringify(data)); }
+        function saveQuotaData(data) { localStorage.setItem('ds_quota_pro', JSON.stringify(data)); }
         function checkQuota() {
             let quota = getQuotaData();
             const today = new Date().toDateString();
@@ -404,24 +950,61 @@
             saveQuotaData(quota);
         }
 
-        function init() {
-            const saved = localStorage.getItem('ds_chat_v7');
-            if (saved) try { conversationHistory = JSON.parse(saved); } catch(e) { conversationHistory = []; }
-            if (!conversationHistory.length) {
-                conversationHistory.push({
-                    role: 'assistant',
-                    content: '👋 Welcome to **DeepSeek AI**!\n\n🧠 Multi-Model Edition:\n• DeepSeek | 💎 Gemini | 🤖 ChatGPT | 🎨 Claude\n\nSelect your model above and ask anything!'
-                });
-                saveHistory();
+        // ===================== INIT =====================
+        function saveChats() { localStorage.setItem('ds_chats_pro', JSON.stringify(chats)); }
+
+        async function init() {
+            // Fetch real IP
+            await fetchUserIP();
+
+            // Check if user is banned
+            if (isUserBanned()) {
+                document.getElementById('blockedScreen').classList.remove('hidden');
+                document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
+                document.querySelector('.blocked-screen p').textContent = `Your IP (${getUserIP()}) has been permanently banned.`;
+                return;
             }
-            renderChat();
+
+            const country = await checkCountry();
+            if (country && BLOCKED_COUNTRIES.includes(country)) {
+                document.getElementById('blockedScreen').classList.remove('hidden');
+                return;
+            }
+
+            const savedLang = localStorage.getItem('ds_lang');
+            if (savedLang) { currentLanguage = savedLang; document.getElementById('languageSelect').value = savedLang; }
+            document.getElementById('userInput').placeholder = PLACEHOLDERS[currentLanguage] || PLACEHOLDERS.en;
+
+            const savedChats = localStorage.getItem('ds_chats_pro');
+            if (savedChats) {
+                try { chats = JSON.parse(savedChats); } catch(e) { chats = {}; }
+            }
+            
+            if (Object.keys(chats).length === 0) {
+                const chatId = Date.now().toString();
+                chats[chatId] = {
+                    name: 'General (Quick · DeepSeek)',
+                    mode: 'instant',
+                    model: 'deepseek',
+                    history: [{
+                        role: 'assistant',
+                        content: '👋 Welcome to **DeepSeek AI Pro**!\n\n✨ Features:\n• Multiple chats\n• 4 AI models\n• File sharing\n• Auto-naming\n• Anti-DDoS protection\n\nCreate a new chat with the 💬 button!'
+                    }]
+                };
+                saveChats();
+            }
+            
+            currentChatId = Object.keys(chats)[0];
+            switchToChat(currentChatId);
             document.getElementById('userInput').focus();
         }
 
         function renderChat() {
             const container = document.getElementById('chatContainer');
             container.innerHTML = '';
-            conversationHistory.forEach(msg => {
+            if (!currentChatId || !chats[currentChatId]) return;
+            
+            chats[currentChatId].history.forEach(msg => {
                 if (msg.role === 'user' || msg.role === 'assistant') {
                     const div = document.createElement('div');
                     div.className = `message ${msg.role === 'user' ? 'user' : 'bot'}`;
@@ -440,45 +1023,65 @@
             return t;
         }
 
-        function saveHistory() { localStorage.setItem('ds_chat_v7', JSON.stringify(conversationHistory)); }
-
+        // ===================== API CALL =====================
         async function callAPI(userMsg) {
+            const chat = chats[currentChatId];
             const messages = [
-                { role: 'system', content: 'You are a helpful AI assistant.' },
-                ...conversationHistory.slice(-16),
+                { role: 'system', content: chat.mode === 'expert' ? 'You are an expert. Give detailed answers.' : 'You are a fast assistant. Give short answers.' },
+                ...chat.history.slice(-16).map(m => ({ role: m.role, content: m.content.replace(/<[^>]*>/g, '') })),
                 { role: 'user', content: userMsg }
             ];
+            
             const res = await fetch(BASE_URL, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    model: MODEL_MAP[currentModel],
-                    messages,
+                    model: MODEL_MAP[chat.model].model,
+                    messages: messages,
                     temperature: 0.7,
                     max_tokens: 2000
                 })
             });
+            
             if (!res.ok) throw new Error('API error');
             const data = await res.json();
             return data.choices[0].message.content;
         }
 
+        // ===================== SEND =====================
         async function sendMessage() {
-            if (isProcessing || !selectedMode) return;
+            if (isProcessing || !currentChatId) return;
+            
+            // Check ban
+            if (isUserBanned()) {
+                document.getElementById('blockedScreen').classList.remove('hidden');
+                document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
+                document.querySelector('.blocked-screen p').textContent = `Your IP (${getUserIP()}) has been permanently banned.`;
+                return;
+            }
+            
+            // Check and increment request count
+            const wasBanned = incrementUserRequestCount();
+            if (wasBanned) {
+                document.getElementById('blockedScreen').classList.remove('hidden');
+                document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
+                document.querySelector('.blocked-screen p').textContent = `Your IP (${getUserIP()}) sent too many requests and has been permanently banned.`;
+                return;
+            }
+            
             const qc = checkQuota();
             if (qc.exceeded) {
-                conversationHistory.push({ role: 'assistant', content: '⚠️ Daily limit reached. Come back tomorrow!' });
-                renderChat(); saveHistory(); return;
+                chats[currentChatId].history.push({ role: 'assistant', content: '⚠️ Daily limit reached. Come back tomorrow!' });
+                renderChat(); saveChats(); return;
             }
+            
             const input = document.getElementById('userInput');
             const msg = input.value.trim();
             if (!msg) return;
 
-            conversationHistory.push({ role: 'user', content: msg });
+            chats[currentChatId].history.push({ role: 'user', content: msg });
             input.value = '';
-            renderChat(); saveHistory();
+            renderChat(); saveChats();
             showTyping();
             isProcessing = true;
             document.getElementById('sendBtn').disabled = true;
@@ -486,13 +1089,13 @@
             try {
                 const reply = await callAPI(msg);
                 removeTyping();
-                conversationHistory.push({ role: 'assistant', content: reply });
-                renderChat(); saveHistory();
+                chats[currentChatId].history.push({ role: 'assistant', content: reply });
+                renderChat(); saveChats();
                 incrementQuota();
             } catch(e) {
                 removeTyping();
-                conversationHistory.push({ role: 'assistant', content: '⚠️ Connection error. Please try again.' });
-                renderChat(); saveHistory();
+                chats[currentChatId].history.push({ role: 'assistant', content: '⚠️ Connection error. Please try again.' });
+                renderChat(); saveChats();
             } finally {
                 isProcessing = false;
                 document.getElementById('sendBtn').disabled = false;
@@ -510,23 +1113,14 @@
         }
         function removeTyping() { const t = document.getElementById('typing'); if (t) t.remove(); }
 
-        function clearHistory() {
-            if (confirm('Clear history?')) { conversationHistory = []; saveHistory(); init(); }
-        }
-
-        document.getElementById('clearBtn').addEventListener('click', clearHistory);
+        // ===================== EVENT LISTENERS =====================
         document.getElementById('sendBtn').addEventListener('click', sendMessage);
         document.getElementById('userInput').addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
         });
 
-        const savedMode = localStorage.getItem('ds_mode');
-        if (!savedMode) {
-            document.getElementById('modeSelectScreen').classList.remove('hidden');
-        } else {
-            selectMode(savedMode);
-        }
-        if (savedMode) { init(); }
+        // ===================== START =====================
+        init();
     </script>
 </body>
 </html>
