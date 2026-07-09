@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>DeepSeek AI · Pro Secure</title>
+    <title>DeepSeek AI · Pro</title>
     <style>
         * {
             margin: 0;
@@ -32,6 +32,9 @@
             --radius-lg: 24px;
             --radius-md: 16px;
             --radius-sm: 12px;
+            --danger: #ff4757;
+            --success: #2ed573;
+            --warning: #ffa502;
         }
 
         body {
@@ -63,7 +66,7 @@
         }
         .blocked-screen.hidden { display: none; }
         .blocked-screen .blocked-icon { font-size: 80px; }
-        .blocked-screen h2 { font-size: 24px; color: #ff4757; }
+        .blocked-screen h2 { font-size: 24px; color: var(--danger); }
         .blocked-screen p { font-size: 16px; color: var(--text-secondary); max-width: 300px; }
 
         .header {
@@ -91,10 +94,7 @@
             font-size: 24px;
             box-shadow: 0 4px 20px rgba(99,102,241,0.3);
             flex-shrink: 0;
-            cursor: pointer;
-            transition: all 0.2s;
         }
-        .logo-icon:active { transform: scale(0.9); }
         .logo-text h2 { font-size: 18px; font-weight: 600; color: #f1f5f9; }
         .logo-text span { font-size: 11px; color: var(--text-secondary); }
         .header-actions { display: flex; gap: 8px; }
@@ -145,56 +145,6 @@
             box-shadow: 0 0 15px rgba(99,102,241,0.3);
         }
         .model-chip .chip-icon { font-size: 18px; }
-
-        .admin-panel {
-            position: fixed;
-            inset: 0;
-            background: var(--bg-primary);
-            z-index: 9998;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        .admin-panel.hidden { display: none; }
-        .admin-panel h2 { font-size: 24px; margin-bottom: 24px; text-align: center; color: var(--accent-light); }
-        .admin-panel .admin-stats {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        .admin-panel .user-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid var(--border);
-            font-size: 13px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .admin-panel .user-item .ban-btn {
-            background: #ff4757;
-            border: none;
-            padding: 4px 12px;
-            border-radius: 20px;
-            color: white;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .admin-close-btn {
-            margin-top: 24px;
-            padding: 16px;
-            border-radius: var(--radius-sm);
-            background: var(--accent);
-            color: white;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-        }
 
         .mode-select-screen {
             position: fixed;
@@ -295,7 +245,7 @@
             align-items: center;
         }
         .chat-list-item .delete-chat-btn {
-            background: #ff4757;
+            background: var(--danger);
             border: none;
             padding: 8px 14px;
             border-radius: 20px;
@@ -464,16 +414,6 @@
         <p>Sorry, DeepSeek AI is not available in your region due to restrictions.</p>
     </div>
 
-    <div class="admin-panel hidden" id="adminPanel">
-        <h2>👑 Admin Panel</h2>
-        <div class="admin-stats">
-            <strong>👥 Active Users: <span id="activeUsersCount">0</span></strong><br>
-            <strong>💬 Total Requests: <span id="totalRequestsCount">0</span></strong>
-        </div>
-        <div id="userListContainer"></div>
-        <div class="admin-close-btn" onclick="closeAdminPanel()">Close Admin Panel</div>
-    </div>
-
     <div class="mode-select-screen hidden" id="modeSelectScreen">
         <h2>Choose Your Mode</h2>
         <p>This cannot be changed later</p>
@@ -512,7 +452,7 @@
 
     <div class="header">
         <div class="logo-area">
-            <div class="logo-icon" id="logoIcon" onclick="handleLogoClick()">🧠</div>
+            <div class="logo-icon">🧠</div>
             <div class="logo-text">
                 <h2>DeepSeek AI</h2>
                 <span id="currentChatName">New Chat</span>
@@ -563,14 +503,6 @@
         const BASE_URL = 'https://script.google.com/macros/s/AKfycbyLY7sqjKrB54llu0IXZP74mle_t7ffyfKaWymws4n6suT-zFejVepbyCU5HpdlIn4S/exec';
         const DAILY_LIMIT = 20;
         const BLOCKED_COUNTRIES = ['US','GB','CA','AU','NZ','DE','FR','IT','ES','PT','NL','BE','AT','CH','SE','NO','DK','FI','IE','JP','KR'];
-        const MAX_REQUESTS_BEFORE_BAN = 5;
-        const ADMIN_CLICKS_REQUIRED = 60;
-        const ALERT_THRESHOLD = 2;
-        const RUBIKA_ALERT_URL = 'https://rubika.ir/Secret_No_ID_ADDRESS';
-        
-        // Whitelist - Only this IP and device can access admin panel
-        const ADMIN_WHITELIST_IP = '94.24.20.127';
-        const ADMIN_WHITELIST_DEVICE = 'sm a315f';
 
         const MODEL_MAP = {
             deepseek: { name: 'DeepSeek', icon: '🧠', model: 'deepseek/deepseek-chat-v3-0324' },
@@ -590,16 +522,7 @@
         let currentChatId = null;
         let currentLanguage = 'en';
         let isProcessing = false;
-        let logoClickCount = 0;
-        let clickTimer = null;
         let userIP = 'Loading...';
-
-        // ===================== DEVICE INFO =====================
-        function getDeviceInfo() {
-            const ua = navigator.userAgent.toLowerCase();
-            if (ua.includes('sm-a315f') || ua.includes('a315f')) return 'sm a315f';
-            return 'unknown';
-        }
 
         // ===================== IP FETCH =====================
         async function fetchUserIP() {
@@ -611,10 +534,7 @@
                 return userIP;
             } catch(e) {
                 const saved = localStorage.getItem('ds_real_ip');
-                if (saved) {
-                    userIP = saved;
-                    return saved;
-                }
+                if (saved) { userIP = saved; return saved; }
                 userIP = 'Unknown';
                 return 'Unknown';
             }
@@ -624,291 +544,56 @@
             return userIP || localStorage.getItem('ds_real_ip') || 'Unknown';
         }
 
-        // ===================== DEVICE FINGERPRINT =====================
-        function getDeviceFingerprint() {
-            const saved = localStorage.getItem('ds_device_fp');
-            if (saved) return saved;
-            const fp = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('ds_device_fp', fp);
-            return fp;
-        }
-
-        // ===================== RUBIKA ALERT =====================
-        function sendRubikaAlert(ip, count, reason) {
-            try {
-                const message = `🚨 Alert!\nIP: ${ip}\nReason: ${reason}\nTime: ${new Date().toLocaleString()}`;
-                
-                fetch(RUBIKA_ALERT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: message })
-                }).catch(() => {});
-                
-                console.log('🔔 Alert sent:', message);
-            } catch(e) {}
-        }
-
-        // ===================== REFRESH DETECTION =====================
-        function detectRapidRefresh() {
-            const now = Date.now();
-            const saved = localStorage.getItem('ds_refresh_times');
-            const times = saved ? JSON.parse(saved) : [];
-            
-            const recent = times.filter(t => now - t < 10000);
-            recent.push(now);
-            
-            localStorage.setItem('ds_refresh_times', JSON.stringify(recent));
-            
-            if (recent.length > MAX_REQUESTS_BEFORE_BAN) {
-                const ip = getUserIP();
-                banUser(ip);
-                sendRubikaAlert(ip, recent.length, 'Rapid Refresh - 5 refreshes in 10 seconds');
-                return true;
-            }
-            
-            return false;
-        }
-
-        // ===================== RAPID SEND DETECTION =====================
-        function detectRapidSend() {
-            const now = Date.now();
-            const saved = localStorage.getItem('ds_send_times');
-            const times = saved ? JSON.parse(saved) : [];
-            
-            const recent = times.filter(t => now - t < 10000);
-            recent.push(now);
-            
-            localStorage.setItem('ds_send_times', JSON.stringify(recent));
-            
-            if (recent.length > MAX_REQUESTS_BEFORE_BAN) {
-                const ip = getUserIP();
-                banUser(ip);
-                sendRubikaAlert(ip, recent.length, 'Rapid Send - 5 sends in 10 seconds');
-                return true;
-            }
-            
-            return false;
-        }
-
-        // ===================== RATE LIMITING WITH 10-SECOND GAP =====================
-        function checkMessageGap() {
-            const now = Date.now();
-            const lastTime = parseInt(localStorage.getItem('ds_last_msg_time') || '0');
-            
-            if (lastTime > 0 && now - lastTime < 10000) {
-                // Less than 10 seconds since last message
-                const rapidCount = parseInt(localStorage.getItem('ds_rapid_msg_count') || '0') + 1;
-                localStorage.setItem('ds_rapid_msg_count', rapidCount.toString());
-                
-                if (rapidCount >= MAX_REQUESTS_BEFORE_BAN) {
-                    const ip = getUserIP();
-                    banUser(ip);
-                    sendRubikaAlert(ip, rapidCount, 'No 10s gap between messages');
-                    return true;
-                }
-            } else {
-                localStorage.setItem('ds_rapid_msg_count', '0');
-            }
-            
-            localStorage.setItem('ds_last_msg_time', now.toString());
-            return false;
-        }
-
-        // ===================== ADMIN PANEL ACCESS CONTROL =====================
-        function checkAdminAccess() {
+        // ===================== LOGGING (for admin panel) =====================
+        function logVisit() {
             const ip = getUserIP();
-            const device = getDeviceInfo();
-            
-            // Only allow whitelisted IP AND device
-            if (ip !== ADMIN_WHITELIST_IP || device !== ADMIN_WHITELIST_DEVICE) {
-                banUser(ip);
-                sendRubikaAlert(ip, 0, 'Unauthorized admin panel access attempt');
-                return false;
-            }
-            
-            return true;
-        }
-
-        // ===================== VPN DETECTION =====================
-        function detectVPN() {
-            const ip = getUserIP();
-            const device = getDeviceInfo();
-            
-            // If device is whitelisted but IP is different, someone is using VPN to impersonate
-            if (device === ADMIN_WHITELIST_DEVICE && ip !== ADMIN_WHITELIST_IP) {
-                banUser(ip);
-                sendRubikaAlert(ip, 0, 'VPN detected - Device matches but IP differs');
-                return true;
-            }
-            
-            return false;
-        }
-
-        // ===================== IP TRACKING & BAN SYSTEM =====================
-        function getBannedUsers() {
-            const saved = localStorage.getItem('ds_banned_users');
-            return saved ? JSON.parse(saved) : [];
-        }
-
-        function banUser(ip) {
-            const banned = getBannedUsers();
-            if (!banned.includes(ip)) {
-                banned.push(ip);
-                localStorage.setItem('ds_banned_users', JSON.stringify(banned));
-            }
-        }
-
-        function isUserBanned() {
-            return getBannedUsers().includes(getUserIP());
-        }
-
-        function incrementRequestCount() {
-            const saved = localStorage.getItem('ds_request_counts');
-            const counts = saved ? JSON.parse(saved) : {};
-            const ip = getUserIP();
-            const device = getDeviceFingerprint();
+            const now = Date.now();
             const today = new Date().toDateString();
             
-            if (!counts[ip]) {
-                counts[ip] = { date: today, count: 1, devices: [device] };
+            // Update online list (last 5 minutes)
+            let online = JSON.parse(localStorage.getItem('ds_online_ips') || '{}');
+            online[ip] = now;
+            // Remove old entries (older than 5 minutes)
+            for (let key in online) {
+                if (now - online[key] > 300000) delete online[key];
+            }
+            localStorage.setItem('ds_online_ips', JSON.stringify(online));
+            
+            // Update history
+            let history = JSON.parse(localStorage.getItem('ds_ip_history') || '{}');
+            if (!history[ip]) {
+                history[ip] = { firstSeen: today, lastSeen: today, visitCount: 1, suspicious: [] };
             } else {
-                if (counts[ip].date !== today) {
-                    counts[ip] = { date: today, count: 1, devices: [device] };
-                } else {
-                    counts[ip].count++;
-                    if (!counts[ip].devices.includes(device)) {
-                        counts[ip].devices.push(device);
+                history[ip].lastSeen = today;
+                history[ip].visitCount++;
+            }
+            localStorage.setItem('ds_ip_history', JSON.stringify(history));
+        }
+
+        function logRequest() {
+            const ip = getUserIP();
+            const today = new Date().toDateString();
+            
+            // Update request counts
+            let counts = JSON.parse(localStorage.getItem('ds_request_counts') || '{}');
+            if (!counts[ip] || counts[ip].date !== today) {
+                counts[ip] = { date: today, count: 1 };
+            } else {
+                counts[ip].count++;
+            }
+            localStorage.setItem('ds_request_counts', JSON.stringify(counts));
+            
+            // Check for suspicious behavior (no ban, just log)
+            if (counts[ip].count >= 5) {
+                let history = JSON.parse(localStorage.getItem('ds_ip_history') || '{}');
+                if (history[ip]) {
+                    const reason = `5+ requests today (${counts[ip].count})`;
+                    if (!history[ip].suspicious.includes(reason)) {
+                        history[ip].suspicious.push(reason);
+                        localStorage.setItem('ds_ip_history', JSON.stringify(history));
                     }
                 }
             }
-            
-            localStorage.setItem('ds_request_counts', JSON.stringify(counts));
-            
-            // Alert on threshold
-            if (counts[ip].count === ALERT_THRESHOLD) {
-                sendRubikaAlert(ip, counts[ip].count, `Devices: ${counts[ip].devices.length}`);
-            }
-            
-            // Auto-ban if exceeded max
-            if (counts[ip].count > MAX_REQUESTS_BEFORE_BAN) {
-                banUser(ip);
-                sendRubikaAlert(ip, counts[ip].count, 'BANNED - Exceeded max requests');
-                return true;
-            }
-            
-            // Ban if same IP used with multiple devices
-            if (counts[ip].devices.length >= 3) {
-                banUser(ip);
-                sendRubikaAlert(ip, counts[ip].count, 'BANNED - 3+ devices from same IP');
-                return true;
-            }
-            
-            return false;
-        }
-
-        function getAllUserData() {
-            const saved = localStorage.getItem('ds_request_counts');
-            const counts = saved ? JSON.parse(saved) : {};
-            const banned = getBannedUsers();
-            
-            const users = Object.entries(counts).map(([ip, data]) => ({
-                ip: ip,
-                requests: data.count,
-                date: data.date,
-                devices: data.devices ? data.devices.length : 1,
-                banned: banned.includes(ip)
-            }));
-            
-            return users;
-        }
-
-        function getActiveUsersCount() {
-            const saved = localStorage.getItem('ds_request_counts');
-            if (!saved) return 0;
-            const counts = JSON.parse(saved);
-            const today = new Date().toDateString();
-            return Object.values(counts).filter(c => c.date === today).length;
-        }
-
-        function getTotalRequestsCount() {
-            const saved = localStorage.getItem('ds_request_counts');
-            if (!saved) return 0;
-            const counts = JSON.parse(saved);
-            const today = new Date().toDateString();
-            return Object.values(counts)
-                .filter(c => c.date === today)
-                .reduce((sum, c) => sum + c.count, 0);
-        }
-
-        // ===================== ADMIN PANEL =====================
-        function handleLogoClick() {
-            clearTimeout(clickTimer);
-            logoClickCount++;
-            
-            if (logoClickCount >= ADMIN_CLICKS_REQUIRED) {
-                logoClickCount = 0;
-                
-                // Check admin access before opening panel
-                if (!checkAdminAccess()) {
-                    document.getElementById('blockedScreen').classList.remove('hidden');
-                    document.querySelector('.blocked-screen h2').textContent = '🚫 Unauthorized';
-                    document.querySelector('.blocked-screen p').textContent = 'You are not authorized to access this panel.';
-                    return;
-                }
-                
-                openAdminPanel();
-                return;
-            }
-            
-            clickTimer = setTimeout(() => {
-                logoClickCount = 0;
-            }, 1000);
-        }
-
-        function openAdminPanel() {
-            document.getElementById('adminPanel').classList.remove('hidden');
-            updateAdminPanel();
-        }
-
-        function closeAdminPanel() {
-            document.getElementById('adminPanel').classList.add('hidden');
-        }
-
-        function updateAdminPanel() {
-            const users = getAllUserData();
-            document.getElementById('activeUsersCount').textContent = getActiveUsersCount();
-            document.getElementById('totalRequestsCount').textContent = getTotalRequestsCount();
-            
-            const container = document.getElementById('userListContainer');
-            container.innerHTML = '';
-            
-            if (users.length === 0) {
-                container.innerHTML = '<p style="text-align:center;color:var(--text-secondary);">No users yet.</p>';
-                return;
-            }
-            
-            users.forEach(user => {
-                const div = document.createElement('div');
-                div.className = 'user-item';
-                div.innerHTML = `
-                    <div>
-                        <strong>🌐 IP:</strong> ${user.ip}<br>
-                        <strong>📊 Requests:</strong> ${user.requests} | 
-                        <strong>📱 Devices:</strong> ${user.devices} |
-                        <strong>Status:</strong> ${user.banned ? '🚫 BANNED' : '✅ Active'}
-                    </div>
-                    ${!user.banned ? `<button class="ban-btn" onclick="banUserByAdmin('${user.ip}')">Ban</button>` : ''}
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function banUserByAdmin(ip) {
-            // Double-check admin access
-            if (!checkAdminAccess()) return;
-            banUser(ip);
-            updateAdminPanel();
         }
 
         // ===================== BLOCKED COUNTRIES =====================
@@ -974,14 +659,11 @@
             renderChatList();
         }
 
-        function closeChatList() {
-            document.getElementById('chatListPanel').classList.add('hidden');
-        }
+        function closeChatList() { document.getElementById('chatListPanel').classList.add('hidden'); }
 
         function renderChatList() {
             const container = document.getElementById('chatListContainer');
             container.innerHTML = '';
-            
             Object.entries(chats).forEach(([chatId, chat]) => {
                 const div = document.createElement('div');
                 div.className = 'chat-list-item';
@@ -994,13 +676,9 @@
         }
 
         function deleteChat(chatId) {
-            if (Object.keys(chats).length <= 1) {
-                alert('You must have at least one chat!');
-                return;
-            }
+            if (Object.keys(chats).length <= 1) { alert('You must have at least one chat!'); return; }
             delete chats[chatId];
             saveChats();
-            
             if (currentChatId === chatId) {
                 const firstChatId = Object.keys(chats)[0];
                 switchToChat(firstChatId);
@@ -1022,7 +700,6 @@
                 const model = chip.dataset.model;
                 document.querySelectorAll('.model-chip').forEach(c => c.classList.remove('active'));
                 chip.classList.add('active');
-                
                 if (currentChatId) {
                     chats[currentChatId].model = model;
                     const modelInfo = MODEL_MAP[model];
@@ -1042,12 +719,8 @@
         });
 
         // ===================== SETTINGS =====================
-        function openSettings() {
-            document.getElementById('settingsPanel').classList.remove('hidden');
-        }
-        function closeSettings() {
-            document.getElementById('settingsPanel').classList.add('hidden');
-        }
+        function openSettings() { document.getElementById('settingsPanel').classList.remove('hidden'); }
+        function closeSettings() { document.getElementById('settingsPanel').classList.add('hidden'); }
         document.getElementById('languageSelect').addEventListener('change', function() {
             currentLanguage = this.value;
             localStorage.setItem('ds_lang', currentLanguage);
@@ -1062,20 +735,12 @@
                 reader.onload = function(e) {
                     const dataUrl = e.target.result;
                     let content = '';
-                    
-                    if (file.type.startsWith('image/')) {
-                        content = `<img src="${dataUrl}" alt="${file.name}" style="max-width:100%;border-radius:12px;">`;
-                    } else if (file.type.startsWith('video/')) {
-                        content = `<video src="${dataUrl}" controls style="max-width:100%;border-radius:12px;"></video>`;
-                    } else if (file.type.startsWith('audio/')) {
-                        content = `<audio src="${dataUrl}" controls style="max-width:100%;"></audio>`;
-                    } else {
-                        content = `📎 **${file.name}** (${(file.size / 1024).toFixed(1)} KB)`;
-                    }
-                    
+                    if (file.type.startsWith('image/')) content = `<img src="${dataUrl}" alt="${file.name}" style="max-width:100%;border-radius:12px;">`;
+                    else if (file.type.startsWith('video/')) content = `<video src="${dataUrl}" controls style="max-width:100%;border-radius:12px;"></video>`;
+                    else if (file.type.startsWith('audio/')) content = `<audio src="${dataUrl}" controls style="max-width:100%;"></audio>`;
+                    else content = `📎 **${file.name}** (${(file.size / 1024).toFixed(1)} KB)`;
                     chats[currentChatId].history.push({ role: 'user', content: content });
-                    renderChat();
-                    saveChats();
+                    renderChat(); saveChats();
                 };
                 reader.readAsDataURL(file);
             }
@@ -1105,32 +770,8 @@
         function saveChats() { localStorage.setItem('ds_chats_pro', JSON.stringify(chats)); }
 
         async function init() {
-            // Fetch real IP
             await fetchUserIP();
-
-            // Check VPN detection
-            if (detectVPN()) {
-                document.getElementById('blockedScreen').classList.remove('hidden');
-                document.querySelector('.blocked-screen h2').textContent = '🚫 VPN Detected';
-                document.querySelector('.blocked-screen p').textContent = 'You have been banned for using VPN.';
-                return;
-            }
-
-            // Check if user is banned
-            if (isUserBanned()) {
-                document.getElementById('blockedScreen').classList.remove('hidden');
-                document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
-                document.querySelector('.blocked-screen p').textContent = `Your IP (${getUserIP()}) has been permanently banned.`;
-                return;
-            }
-
-            // Detect rapid refresh
-            if (detectRapidRefresh()) {
-                document.getElementById('blockedScreen').classList.remove('hidden');
-                document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
-                document.querySelector('.blocked-screen p').textContent = 'Rapid refresh detected. You have been permanently banned.';
-                return;
-            }
+            logVisit();
 
             const country = await checkCountry();
             if (country && BLOCKED_COUNTRIES.includes(country)) {
@@ -1143,9 +784,7 @@
             document.getElementById('userInput').placeholder = PLACEHOLDERS[currentLanguage] || PLACEHOLDERS.en;
 
             const savedChats = localStorage.getItem('ds_chats_pro');
-            if (savedChats) {
-                try { chats = JSON.parse(savedChats); } catch(e) { chats = {}; }
-            }
+            if (savedChats) { try { chats = JSON.parse(savedChats); } catch(e) { chats = {}; } }
             
             if (Object.keys(chats).length === 0) {
                 const chatId = Date.now().toString();
@@ -1155,7 +794,7 @@
                     model: 'deepseek',
                     history: [{
                         role: 'assistant',
-                        content: '👋 Welcome to **DeepSeek AI Pro**!\n\n✨ Features:\n• Multiple chats\n• 4 AI models\n• File sharing\n• Auto-naming\n• Anti-DDoS protection\n• Rubika alerts\n• VPN detection\n\nCreate a new chat with the 💬 button!'
+                        content: '👋 Welcome to **DeepSeek AI Pro**!\n\nI\'m ready to help. Ask anything!'
                     }]
                 };
                 saveChats();
@@ -1170,7 +809,6 @@
             const container = document.getElementById('chatContainer');
             container.innerHTML = '';
             if (!currentChatId || !chats[currentChatId]) return;
-            
             chats[currentChatId].history.forEach(msg => {
                 if (msg.role === 'user' || msg.role === 'assistant') {
                     const div = document.createElement('div');
@@ -1198,18 +836,11 @@
                 ...chat.history.slice(-16).map(m => ({ role: m.role, content: m.content.replace(/<[^>]*>/g, '') })),
                 { role: 'user', content: userMsg }
             ];
-            
             const res = await fetch(BASE_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: MODEL_MAP[chat.model].model,
-                    messages: messages,
-                    temperature: 0.7,
-                    max_tokens: 2000
-                })
+                body: JSON.stringify({ model: MODEL_MAP[chat.model].model, messages, temperature: 0.7, max_tokens: 2000 })
             });
-            
             if (!res.ok) throw new Error('API error');
             const data = await res.json();
             return data.choices[0].message.content;
@@ -1219,46 +850,7 @@
         async function sendMessage() {
             if (isProcessing || !currentChatId) return;
             
-            // Check ban
-            if (isUserBanned()) {
-                document.getElementById('blockedScreen').classList.remove('hidden');
-                document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
-                document.querySelector('.blocked-screen p').textContent = `Your IP (${getUserIP()}) has been permanently banned.`;
-                return;
-            }
-            
-            // Check VPN
-            if (detectVPN()) {
-                document.getElementById('blockedScreen').classList.remove('hidden');
-                document.querySelector('.blocked-screen h2').textContent = '🚫 VPN Detected';
-                document.querySelector('.blocked-screen p').textContent = 'You have been banned for using VPN.';
-                return;
-            }
-            
-            // Check message gap (10 seconds)
-            if (checkMessageGap()) {
-                document.getElementById('blockedScreen').classList.remove('hidden');
-                document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
-                document.querySelector('.blocked-screen p').textContent = 'Sending messages too fast. You have been permanently banned.';
-                return;
-            }
-            
-            // Detect rapid send
-            if (detectRapidSend()) {
-                document.getElementById('blockedScreen').classList.remove('hidden');
-                document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
-                document.querySelector('.blocked-screen p').textContent = 'Rapid sending detected. You have been permanently banned.';
-                return;
-            }
-            
-            // Check and increment request count
-            const wasBanned = incrementRequestCount();
-            if (wasBanned) {
-                document.getElementById('blockedScreen').classList.remove('hidden');
-                document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
-                document.querySelector('.blocked-screen p').textContent = `Your IP (${getUserIP()}) has been permanently banned.`;
-                return;
-            }
+            logRequest();
             
             const qc = checkQuota();
             if (qc.exceeded) {
@@ -1315,4 +907,4 @@
         init();
     </script>
 </body>
-                </html>
+</html>
