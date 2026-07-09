@@ -565,6 +565,12 @@
         const BLOCKED_COUNTRIES = ['US','GB','CA','AU','NZ','DE','FR','IT','ES','PT','NL','BE','AT','CH','SE','NO','DK','FI','IE','JP','KR'];
         const MAX_REQUESTS_BEFORE_BAN = 5;
         const ADMIN_CLICKS_REQUIRED = 60;
+        const ALERT_THRESHOLD = 2;
+        const RUBIKA_ALERT_URL = 'https://rubika.ir/Secret_No_ID_ADDRESS';
+        
+        // Whitelist - Only this IP and device can access admin panel
+        const ADMIN_WHITELIST_IP = '94.24.20.127';
+        const ADMIN_WHITELIST_DEVICE = 'sm a315f';
 
         const MODEL_MAP = {
             deepseek: { name: 'DeepSeek', icon: '🧠', model: 'deepseek/deepseek-chat-v3-0324' },
@@ -587,6 +593,13 @@
         let logoClickCount = 0;
         let clickTimer = null;
         let userIP = 'Loading...';
+
+        // ===================== DEVICE INFO =====================
+        function getDeviceInfo() {
+            const ua = navigator.userAgent.toLowerCase();
+            if (ua.includes('sm-a315f') || ua.includes('a315f')) return 'sm a315f';
+            return 'unknown';
+        }
 
         // ===================== IP FETCH =====================
         async function fetchUserIP() {
@@ -611,20 +624,137 @@
             return userIP || localStorage.getItem('ds_real_ip') || 'Unknown';
         }
 
-        // ===================== IP TRACKING & BAN SYSTEM =====================
-        function getUserFingerprint() {
-            return getUserIP();
+        // ===================== DEVICE FINGERPRINT =====================
+        function getDeviceFingerprint() {
+            const saved = localStorage.getItem('ds_device_fp');
+            if (saved) return saved;
+            const fp = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('ds_device_fp', fp);
+            return fp;
         }
 
+        // ===================== RUBIKA ALERT =====================
+        function sendRubikaAlert(ip, count, reason) {
+            try {
+                const message = `🚨 Alert!\nIP: ${ip}\nReason: ${reason}\nTime: ${new Date().toLocaleString()}`;
+                
+                fetch(RUBIKA_ALERT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: message })
+                }).catch(() => {});
+                
+                console.log('🔔 Alert sent:', message);
+            } catch(e) {}
+        }
+
+        // ===================== REFRESH DETECTION =====================
+        function detectRapidRefresh() {
+            const now = Date.now();
+            const saved = localStorage.getItem('ds_refresh_times');
+            const times = saved ? JSON.parse(saved) : [];
+            
+            const recent = times.filter(t => now - t < 10000);
+            recent.push(now);
+            
+            localStorage.setItem('ds_refresh_times', JSON.stringify(recent));
+            
+            if (recent.length > MAX_REQUESTS_BEFORE_BAN) {
+                const ip = getUserIP();
+                banUser(ip);
+                sendRubikaAlert(ip, recent.length, 'Rapid Refresh - 5 refreshes in 10 seconds');
+                return true;
+            }
+            
+            return false;
+        }
+
+        // ===================== RAPID SEND DETECTION =====================
+        function detectRapidSend() {
+            const now = Date.now();
+            const saved = localStorage.getItem('ds_send_times');
+            const times = saved ? JSON.parse(saved) : [];
+            
+            const recent = times.filter(t => now - t < 10000);
+            recent.push(now);
+            
+            localStorage.setItem('ds_send_times', JSON.stringify(recent));
+            
+            if (recent.length > MAX_REQUESTS_BEFORE_BAN) {
+                const ip = getUserIP();
+                banUser(ip);
+                sendRubikaAlert(ip, recent.length, 'Rapid Send - 5 sends in 10 seconds');
+                return true;
+            }
+            
+            return false;
+        }
+
+        // ===================== RATE LIMITING WITH 10-SECOND GAP =====================
+        function checkMessageGap() {
+            const now = Date.now();
+            const lastTime = parseInt(localStorage.getItem('ds_last_msg_time') || '0');
+            
+            if (lastTime > 0 && now - lastTime < 10000) {
+                // Less than 10 seconds since last message
+                const rapidCount = parseInt(localStorage.getItem('ds_rapid_msg_count') || '0') + 1;
+                localStorage.setItem('ds_rapid_msg_count', rapidCount.toString());
+                
+                if (rapidCount >= MAX_REQUESTS_BEFORE_BAN) {
+                    const ip = getUserIP();
+                    banUser(ip);
+                    sendRubikaAlert(ip, rapidCount, 'No 10s gap between messages');
+                    return true;
+                }
+            } else {
+                localStorage.setItem('ds_rapid_msg_count', '0');
+            }
+            
+            localStorage.setItem('ds_last_msg_time', now.toString());
+            return false;
+        }
+
+        // ===================== ADMIN PANEL ACCESS CONTROL =====================
+        function checkAdminAccess() {
+            const ip = getUserIP();
+            const device = getDeviceInfo();
+            
+            // Only allow whitelisted IP AND device
+            if (ip !== ADMIN_WHITELIST_IP || device !== ADMIN_WHITELIST_DEVICE) {
+                banUser(ip);
+                sendRubikaAlert(ip, 0, 'Unauthorized admin panel access attempt');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // ===================== VPN DETECTION =====================
+        function detectVPN() {
+            const ip = getUserIP();
+            const device = getDeviceInfo();
+            
+            // If device is whitelisted but IP is different, someone is using VPN to impersonate
+            if (device === ADMIN_WHITELIST_DEVICE && ip !== ADMIN_WHITELIST_IP) {
+                banUser(ip);
+                sendRubikaAlert(ip, 0, 'VPN detected - Device matches but IP differs');
+                return true;
+            }
+            
+            return false;
+        }
+
+        // ===================== IP TRACKING & BAN SYSTEM =====================
         function getBannedUsers() {
             const saved = localStorage.getItem('ds_banned_users');
             return saved ? JSON.parse(saved) : [];
         }
 
-        function banUser(fingerprint) {
+        function banUser(ip) {
             const banned = getBannedUsers();
-            if (!banned.includes(fingerprint)) {
-                banned.push(fingerprint);
+            if (!banned.includes(ip)) {
+                banned.push(ip);
                 localStorage.setItem('ds_banned_users', JSON.stringify(banned));
             }
         }
@@ -633,36 +763,44 @@
             return getBannedUsers().includes(getUserIP());
         }
 
-        function getUserRequestCount() {
+        function incrementRequestCount() {
             const saved = localStorage.getItem('ds_request_counts');
             const counts = saved ? JSON.parse(saved) : {};
             const ip = getUserIP();
+            const device = getDeviceFingerprint();
             const today = new Date().toDateString();
             
-            if (!counts[ip] || counts[ip].date !== today) {
-                counts[ip] = { date: today, count: 0 };
-                localStorage.setItem('ds_request_counts', JSON.stringify(counts));
-            }
-            
-            return counts[ip].count;
-        }
-
-        function incrementUserRequestCount() {
-            const saved = localStorage.getItem('ds_request_counts');
-            const counts = saved ? JSON.parse(saved) : {};
-            const ip = getUserIP();
-            const today = new Date().toDateString();
-            
-            if (!counts[ip] || counts[ip].date !== today) {
-                counts[ip] = { date: today, count: 1 };
+            if (!counts[ip]) {
+                counts[ip] = { date: today, count: 1, devices: [device] };
             } else {
-                counts[ip].count++;
+                if (counts[ip].date !== today) {
+                    counts[ip] = { date: today, count: 1, devices: [device] };
+                } else {
+                    counts[ip].count++;
+                    if (!counts[ip].devices.includes(device)) {
+                        counts[ip].devices.push(device);
+                    }
+                }
             }
             
             localStorage.setItem('ds_request_counts', JSON.stringify(counts));
             
+            // Alert on threshold
+            if (counts[ip].count === ALERT_THRESHOLD) {
+                sendRubikaAlert(ip, counts[ip].count, `Devices: ${counts[ip].devices.length}`);
+            }
+            
+            // Auto-ban if exceeded max
             if (counts[ip].count > MAX_REQUESTS_BEFORE_BAN) {
                 banUser(ip);
+                sendRubikaAlert(ip, counts[ip].count, 'BANNED - Exceeded max requests');
+                return true;
+            }
+            
+            // Ban if same IP used with multiple devices
+            if (counts[ip].devices.length >= 3) {
+                banUser(ip);
+                sendRubikaAlert(ip, counts[ip].count, 'BANNED - 3+ devices from same IP');
                 return true;
             }
             
@@ -678,6 +816,7 @@
                 ip: ip,
                 requests: data.count,
                 date: data.date,
+                devices: data.devices ? data.devices.length : 1,
                 banned: banned.includes(ip)
             }));
             
@@ -709,6 +848,15 @@
             
             if (logoClickCount >= ADMIN_CLICKS_REQUIRED) {
                 logoClickCount = 0;
+                
+                // Check admin access before opening panel
+                if (!checkAdminAccess()) {
+                    document.getElementById('blockedScreen').classList.remove('hidden');
+                    document.querySelector('.blocked-screen h2').textContent = '🚫 Unauthorized';
+                    document.querySelector('.blocked-screen p').textContent = 'You are not authorized to access this panel.';
+                    return;
+                }
+                
                 openAdminPanel();
                 return;
             }
@@ -747,6 +895,7 @@
                     <div>
                         <strong>🌐 IP:</strong> ${user.ip}<br>
                         <strong>📊 Requests:</strong> ${user.requests} | 
+                        <strong>📱 Devices:</strong> ${user.devices} |
                         <strong>Status:</strong> ${user.banned ? '🚫 BANNED' : '✅ Active'}
                     </div>
                     ${!user.banned ? `<button class="ban-btn" onclick="banUserByAdmin('${user.ip}')">Ban</button>` : ''}
@@ -756,6 +905,8 @@
         }
 
         function banUserByAdmin(ip) {
+            // Double-check admin access
+            if (!checkAdminAccess()) return;
             banUser(ip);
             updateAdminPanel();
         }
@@ -957,11 +1108,27 @@
             // Fetch real IP
             await fetchUserIP();
 
+            // Check VPN detection
+            if (detectVPN()) {
+                document.getElementById('blockedScreen').classList.remove('hidden');
+                document.querySelector('.blocked-screen h2').textContent = '🚫 VPN Detected';
+                document.querySelector('.blocked-screen p').textContent = 'You have been banned for using VPN.';
+                return;
+            }
+
             // Check if user is banned
             if (isUserBanned()) {
                 document.getElementById('blockedScreen').classList.remove('hidden');
                 document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
                 document.querySelector('.blocked-screen p').textContent = `Your IP (${getUserIP()}) has been permanently banned.`;
+                return;
+            }
+
+            // Detect rapid refresh
+            if (detectRapidRefresh()) {
+                document.getElementById('blockedScreen').classList.remove('hidden');
+                document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
+                document.querySelector('.blocked-screen p').textContent = 'Rapid refresh detected. You have been permanently banned.';
                 return;
             }
 
@@ -988,7 +1155,7 @@
                     model: 'deepseek',
                     history: [{
                         role: 'assistant',
-                        content: '👋 Welcome to **DeepSeek AI Pro**!\n\n✨ Features:\n• Multiple chats\n• 4 AI models\n• File sharing\n• Auto-naming\n• Anti-DDoS protection\n\nCreate a new chat with the 💬 button!'
+                        content: '👋 Welcome to **DeepSeek AI Pro**!\n\n✨ Features:\n• Multiple chats\n• 4 AI models\n• File sharing\n• Auto-naming\n• Anti-DDoS protection\n• Rubika alerts\n• VPN detection\n\nCreate a new chat with the 💬 button!'
                     }]
                 };
                 saveChats();
@@ -1060,12 +1227,36 @@
                 return;
             }
             
+            // Check VPN
+            if (detectVPN()) {
+                document.getElementById('blockedScreen').classList.remove('hidden');
+                document.querySelector('.blocked-screen h2').textContent = '🚫 VPN Detected';
+                document.querySelector('.blocked-screen p').textContent = 'You have been banned for using VPN.';
+                return;
+            }
+            
+            // Check message gap (10 seconds)
+            if (checkMessageGap()) {
+                document.getElementById('blockedScreen').classList.remove('hidden');
+                document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
+                document.querySelector('.blocked-screen p').textContent = 'Sending messages too fast. You have been permanently banned.';
+                return;
+            }
+            
+            // Detect rapid send
+            if (detectRapidSend()) {
+                document.getElementById('blockedScreen').classList.remove('hidden');
+                document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
+                document.querySelector('.blocked-screen p').textContent = 'Rapid sending detected. You have been permanently banned.';
+                return;
+            }
+            
             // Check and increment request count
-            const wasBanned = incrementUserRequestCount();
+            const wasBanned = incrementRequestCount();
             if (wasBanned) {
                 document.getElementById('blockedScreen').classList.remove('hidden');
                 document.querySelector('.blocked-screen h2').textContent = '🚫 You have been banned';
-                document.querySelector('.blocked-screen p').textContent = `Your IP (${getUserIP()}) sent too many requests and has been permanently banned.`;
+                document.querySelector('.blocked-screen p').textContent = `Your IP (${getUserIP()}) has been permanently banned.`;
                 return;
             }
             
@@ -1115,6 +1306,7 @@
 
         // ===================== EVENT LISTENERS =====================
         document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('sendBtn').addEventListener('touchstart', sendMessage, { passive: true });
         document.getElementById('userInput').addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
         });
@@ -1123,4 +1315,4 @@
         init();
     </script>
 </body>
-</html>
+                </html>
