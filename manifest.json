@@ -1,0 +1,17 @@
+{
+  "name": "DeepSeek AI Pro",
+  "short_name": "DeepSeek AI",
+  "description": "Advanced Multi-Model AI Chatbot by Sepehr",
+  "start_url": "/deepseek.ai",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🧠</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
